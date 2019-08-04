@@ -15,8 +15,12 @@ public class AgenteInteraccionConElUsuario extends Agent{
         public void action() {
             Scanner entrada = new Scanner(System.in);
             System.out.println("Menu");
-            System.out.println("1. Presentar un simulacro");
-            System.out.println("2. Presentar una evaluacion");
+            System.out.println("Opciones del profesor");
+            System.out.println("1. Crear pregunta");
+            System.out.println("2. Crear evalucion");
+            System.out.println("Opciones del estudiante");
+            System.out.println("3. Presentar un simulacro");
+            System.out.println("4. Presentar una evaluacion");
             System.out.println("Ingrese una opcion");
             int opcion;
             opcion = entrada.nextInt();
