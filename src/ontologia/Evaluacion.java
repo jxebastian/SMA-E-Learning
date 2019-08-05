@@ -65,5 +65,4 @@ public class Evaluacion implements Concept {
    public int getCalificacion() {
      return this.calificacion;
    }
-
 }
