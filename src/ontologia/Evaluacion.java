@@ -8,7 +8,7 @@ import jade.core.*;
 /**
 * Protege name: Evaluacion
 * @author ontology bean generator
-* @version 2019/08/4, 16:13:27
+* @version 2019/08/9, 13:02:56
 */
 public class Evaluacion implements Concept {
 
@@ -65,4 +65,5 @@ public class Evaluacion implements Concept {
    public int getCalificacion() {
      return this.calificacion;
    }
+
 }

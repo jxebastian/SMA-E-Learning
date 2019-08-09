@@ -8,9 +8,20 @@ import jade.core.*;
 /**
 * Protege name: Pregunta
 * @author ontology bean generator
-* @version 2019/08/4, 16:13:27
+* @version 2019/08/9, 13:02:56
 */
 public class Pregunta implements Concept {
+
+   /**
+* Protege name: tema
+   */
+   private String tema;
+   public void setTema(String value) { 
+    this.tema=value;
+   }
+   public String getTema() {
+     return this.tema;
+   }
 
    /**
 * Protege name: opcion2
@@ -46,25 +57,14 @@ public class Pregunta implements Concept {
    }
 
    /**
-* Protege name: ontologiaProyecto_Class0
+* Protege name: opcion4
    */
-   private String ontologiaProyecto_Class0;
-   public void setOntologiaProyecto_Class0(String value) { 
-    this.ontologiaProyecto_Class0=value;
+   private String opcion4;
+   public void setOpcion4(String value) { 
+    this.opcion4=value;
    }
-   public String getOntologiaProyecto_Class0() {
-     return this.ontologiaProyecto_Class0;
-   }
-
-   /**
-* Protege name: nivelDificultad
-   */
-   private String nivelDificultad;
-   public void setNivelDificultad(String value) { 
-    this.nivelDificultad=value;
-   }
-   public String getNivelDificultad() {
-     return this.nivelDificultad;
+   public String getOpcion4() {
+     return this.opcion4;
    }
 
    /**
@@ -79,14 +79,14 @@ public class Pregunta implements Concept {
    }
 
    /**
-* Protege name: opcion4
+* Protege name: nivelDificultad
    */
-   private String opcion4;
-   public void setOpcion4(String value) { 
-    this.opcion4=value;
+   private String nivelDificultad;
+   public void setNivelDificultad(String value) { 
+    this.nivelDificultad=value;
    }
-   public String getOpcion4() {
-     return this.opcion4;
+   public String getNivelDificultad() {
+     return this.nivelDificultad;
    }
 
    /**

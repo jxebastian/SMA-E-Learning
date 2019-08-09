@@ -3,10 +3,13 @@ package ontologia;
 
 import jade.content.onto.*;
 import jade.content.schema.*;
+import jade.util.leap.HashMap;
+import jade.content.lang.Codec;
+import jade.core.CaseInsensitiveString;
 
 /** file: ElearnigOntology.java
  * @author ontology bean generator
- * @version 2019/08/4, 16:13:27
+ * @version 2019/08/9, 13:02:56
  */
 public class ElearnigOntology extends jade.content.onto.Ontology  {
   //NAME
@@ -36,19 +39,23 @@ public class ElearnigOntology extends jade.content.onto.Ontology  {
     public static final String EVALUACIONCALIFICADA="EvaluacionCalificada";
     public static final String SIMULACROCALIFICADO_SIMULACRO="simulacro";
     public static final String SIMULACROCALIFICADO="SimulacroCalificado";
+    public static final String UNIDADESDECONOCIMIENTOSCREADA_UNIDADES="unidades";
+    public static final String UNIDADESDECONOCIMIENTOSCREADA="UnidadesDeConocimientosCreada";
     public static final String EVALUACION_CALIFICACION="calificacion";
     public static final String EVALUACION_LISTADEPREGUNTAS="listaDePreguntas";
     public static final String EVALUACION_NIVELDIFICULTAD="nivelDificultad";
     public static final String EVALUACION_ANALISIS="analisis";
     public static final String EVALUACION="Evaluacion";
+    public static final String UNIDADESDECONOCIMIENTOS_UNIDADESDECONOCIMIENTOS="unidadesDeConocimientos";
+    public static final String UNIDADESDECONOCIMIENTOS="UnidadesDeConocimientos";
     public static final String PREGUNTA_ENUNCIADO="enunciado";
-    public static final String PREGUNTA_OPCION4="opcion4";
-    public static final String PREGUNTA_RESPUESTACORRECTA="respuestaCorrecta";
     public static final String PREGUNTA_NIVELDIFICULTAD="nivelDificultad";
-    public static final String PREGUNTA_ONTOLOGIAPROYECTO_CLASS0="ontologiaProyecto_Class0";
+    public static final String PREGUNTA_RESPUESTACORRECTA="respuestaCorrecta";
+    public static final String PREGUNTA_OPCION4="opcion4";
     public static final String PREGUNTA_OPCION1="opcion1";
     public static final String PREGUNTA_OPCION3="opcion3";
     public static final String PREGUNTA_OPCION2="opcion2";
+    public static final String PREGUNTA_TEMA="tema";
     public static final String PREGUNTA="Pregunta";
     public static final String RECOMENDACIONDESIMULACRO_RECOMENDACION="recomendacion";
     public static final String RECOMENDACIONDESIMULACRO="RecomendacionDeSimulacro";
@@ -77,6 +84,8 @@ public class ElearnigOntology extends jade.content.onto.Ontology  {
     add(recomendacionDeSimulacroSchema, ontologia.RecomendacionDeSimulacro.class);
     ConceptSchema preguntaSchema = new ConceptSchema(PREGUNTA);
     add(preguntaSchema, ontologia.Pregunta.class);
+    ConceptSchema unidadesDeConocimientosSchema = new ConceptSchema(UNIDADESDECONOCIMIENTOS);
+    add(unidadesDeConocimientosSchema, ontologia.UnidadesDeConocimientos.class);
     ConceptSchema evaluacionSchema = new ConceptSchema(EVALUACION);
     add(evaluacionSchema, ontologia.Evaluacion.class);
 
@@ -85,6 +94,8 @@ public class ElearnigOntology extends jade.content.onto.Ontology  {
     // adding AID(s)
 
     // adding Predicate(s)
+    PredicateSchema unidadesDeConocimientosCreadaSchema = new PredicateSchema(UNIDADESDECONOCIMIENTOSCREADA);
+    add(unidadesDeConocimientosCreadaSchema, ontologia.UnidadesDeConocimientosCreada.class);
     PredicateSchema simulacroCalificadoSchema = new PredicateSchema(SIMULACROCALIFICADO);
     add(simulacroCalificadoSchema, ontologia.SimulacroCalificado.class);
     PredicateSchema evaluacionCalificadaSchema = new PredicateSchema(EVALUACIONCALIFICADA);
@@ -111,18 +122,20 @@ public class ElearnigOntology extends jade.content.onto.Ontology  {
     unidadDeConocimientoSchema.add(UNIDADDECONOCIMIENTO_TEMA, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     unidadDeConocimientoSchema.add(UNIDADDECONOCIMIENTO_LISTADEPREGUNTAS, preguntaSchema, 0, ObjectSchema.UNLIMITED);
     recomendacionDeSimulacroSchema.add(RECOMENDACIONDESIMULACRO_RECOMENDACION, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
+    preguntaSchema.add(PREGUNTA_TEMA, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     preguntaSchema.add(PREGUNTA_OPCION2, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     preguntaSchema.add(PREGUNTA_OPCION3, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     preguntaSchema.add(PREGUNTA_OPCION1, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
-    preguntaSchema.add(PREGUNTA_ONTOLOGIAPROYECTO_CLASS0, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
-    preguntaSchema.add(PREGUNTA_NIVELDIFICULTAD, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
-    preguntaSchema.add(PREGUNTA_RESPUESTACORRECTA, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     preguntaSchema.add(PREGUNTA_OPCION4, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
+    preguntaSchema.add(PREGUNTA_RESPUESTACORRECTA, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
+    preguntaSchema.add(PREGUNTA_NIVELDIFICULTAD, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     preguntaSchema.add(PREGUNTA_ENUNCIADO, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
+    unidadesDeConocimientosSchema.add(UNIDADESDECONOCIMIENTOS_UNIDADESDECONOCIMIENTOS, unidadDeConocimientoSchema, 0, ObjectSchema.UNLIMITED);
     evaluacionSchema.add(EVALUACION_ANALISIS, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     evaluacionSchema.add(EVALUACION_NIVELDIFICULTAD, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     evaluacionSchema.add(EVALUACION_LISTADEPREGUNTAS, preguntaSchema, 0, ObjectSchema.UNLIMITED);
     evaluacionSchema.add(EVALUACION_CALIFICACION, (TermSchema)getSchema(BasicOntology.INTEGER), ObjectSchema.OPTIONAL);
+    unidadesDeConocimientosCreadaSchema.add(UNIDADESDECONOCIMIENTOSCREADA_UNIDADES, unidadesDeConocimientosSchema, ObjectSchema.OPTIONAL);
     simulacroCalificadoSchema.add(SIMULACROCALIFICADO_SIMULACRO, simulacroSchema, ObjectSchema.OPTIONAL);
     evaluacionCalificadaSchema.add(EVALUACIONCALIFICADA_EVALUACION, evaluacionSchema, ObjectSchema.OPTIONAL);
     unidadDeConocimientoCreadaSchema.add(UNIDADDECONOCIMIENTOCREADA_UNIDADDECONOCIMIENTO, unidadDeConocimientoSchema, ObjectSchema.OPTIONAL);

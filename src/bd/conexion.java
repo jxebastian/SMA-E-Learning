@@ -23,7 +23,7 @@ public class conexion {
     public String ruta;
 
     public conexion() {
-        ruta = "./../../bd/proyecto.db";
+        ruta = "bd/proyecto.db";
     }
 
     public void conectar() {

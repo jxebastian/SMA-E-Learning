@@ -5,14 +5,17 @@
  */
 package bd;
 
+import jade.util.leap.ArrayList;
+import jade.util.leap.List;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+//import java.util.ArrayList;
+//import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import ontologia.Evaluacion;
 import ontologia.Pregunta;
+import ontologia.UnidadDeConocimiento;
 
 /**
  *
@@ -22,7 +25,7 @@ public class operaciones {
 
     private final conexion conexion = new conexion();
 
-    boolean guardarPreguntaSimulacro(Pregunta pregunta, String tema) {
+    public boolean guardarPreguntaSimulacro(Pregunta pregunta, String tema) {
         conexion.conectar();
         String sql = "insert into preguntaSimulacro values('" + pregunta.getEnunciado()
                 + "','" + pregunta.getOpcion1()
@@ -72,9 +75,9 @@ public class operaciones {
         return true;
     }
 
-    boolean guardarUnidadDeConocimiento(String tema) {
+    public boolean guardarUnidadDeConocimiento(String tema) {
         conexion.conectar();
-        String sql = "insert into preguntaSimulacro values('" + tema + "')";
+        String sql = "insert into unidadDeConocimiento values('" + tema + "')";
         try {
             conexion.consulta.execute(sql);
         } catch (SQLException ex) {
@@ -105,8 +108,8 @@ public class operaciones {
         return true;
     }
 
-    List<Pregunta> obtenerPreguntasSimulacro(String nivelDificultad) {
-        List<Pregunta> preguntas = new ArrayList<>();
+    List obtenerPreguntasSimulacro(String nivelDificultad) {
+        List preguntas = new ArrayList();
         conexion.conectar();
         String sql = "select * from preguntaSimulacro";
         try {
@@ -128,5 +131,22 @@ public class operaciones {
             }
         }
         return preguntas;
+    }
+    
+    public List obtenerUnidadesDeConocimientos(){
+        List unidades = new ArrayList();
+        conexion.conectar();
+        String sql = "Select * from unidadDeConocimiento";
+        try {
+            ResultSet resultado = conexion.consulta.executeQuery(sql);
+            while(resultado.next()){
+                UnidadDeConocimiento unidad = new UnidadDeConocimiento();
+                unidad.setTema(resultado.getString("tema"));
+                unidades.add(unidad);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return unidades;
     }
 }
