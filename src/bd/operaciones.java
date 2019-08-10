@@ -25,16 +25,16 @@ public class operaciones {
 
     private final conexion conexion = new conexion();
 
-    public boolean guardarPreguntaSimulacro(Pregunta pregunta, String tema) {
+    public boolean guardarPreguntaSimulacro(Pregunta pregunta) {
         conexion.conectar();
-        String sql = "insert into preguntaSimulacro values('" + pregunta.getEnunciado()
+        String sql = "insert into preguntaSimulacro values(NULL,'" + pregunta.getEnunciado()
                 + "','" + pregunta.getOpcion1()
                 + "','" + pregunta.getOpcion2()
                 + "','" + pregunta.getOpcion3()
                 + "','" + pregunta.getOpcion4()
                 + "','" + pregunta.getRespuestaCorrecta()
                 + "','" + pregunta.getNivelDificultad()
-                + "','" + tema + "')";
+                + "','" + pregunta.getTema() + "')";
         try {
             conexion.consulta.execute(sql);
         } catch (SQLException ex) {

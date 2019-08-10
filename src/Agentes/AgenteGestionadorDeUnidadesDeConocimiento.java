@@ -14,7 +14,6 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.util.leap.List;
 //import java.util.List;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import ontologia.ElearnigOntology;
@@ -25,7 +24,6 @@ import ontologia.UnidadesDeConocimientosCreada;
 
 public class AgenteGestionadorDeUnidadesDeConocimiento extends Agent {
 
-    private final Scanner entrada = new Scanner(System.in);
     private final operaciones baseDatos = new operaciones();
     private final Codec codec = new SLCodec();
     private final Ontology ontologia = ElearnigOntology.getInstance();

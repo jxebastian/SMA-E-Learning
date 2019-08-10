@@ -7,6 +7,7 @@ import jade.content.onto.Ontology;
 import jade.content.onto.OntologyException;
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -29,6 +30,24 @@ public class AgenteInteraccionConElUsuario extends Agent {
         getContentManager().registerLanguage(codec);
         getContentManager().registerOntology(ontologia);
         this.addBehaviour(new menu());
+    }
+
+    private class respuestaCreacionPreguntaSimulacro extends CyclicBehaviour {
+
+        @Override
+        public void action() {
+            AID id = new AID();
+            id.setLocalName("AgenteGestionadorDeSimulacros");
+            MessageTemplate mt = MessageTemplate.and(
+                    MessageTemplate.MatchSender(id),
+                    MessageTemplate.MatchContent("creado"));
+            ACLMessage msg = myAgent.receive(mt);
+            if (msg != null) {
+                this.myAgent.addBehaviour(new menu());
+            } else {
+                block();
+            }
+        }
     }
 
     private class solicitarNombresUnidadConocimiento extends OneShotBehaviour {
@@ -113,7 +132,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
                         mensaje.setPerformative(ACLMessage.INFORM);
                         getContentManager().fillContent(mensaje, preguntaCreada);
                         this.myAgent.send(mensaje);
-                        
+                        this.myAgent.addBehaviour(new respuestaCreacionPreguntaSimulacro());
                     }
                 } catch (Codec.CodecException | OntologyException ex) {
                     Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
