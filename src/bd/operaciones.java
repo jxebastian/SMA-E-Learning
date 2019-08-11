@@ -50,16 +50,16 @@ public class operaciones {
         return true;
     }
 
-    boolean guardarPreguntaEvaluacion(Pregunta pregunta, String tema) {
+    public boolean guardarPreguntaEvaluacion(Pregunta pregunta) {
         conexion.conectar();
-        String sql = "insert into preguntaEvaluacion values('" + pregunta.getEnunciado()
+        String sql = "insert into preguntaEvaluacion values(NULL,'" + pregunta.getEnunciado()
                 + "','" + pregunta.getOpcion1()
                 + "','" + pregunta.getOpcion2()
                 + "','" + pregunta.getOpcion3()
                 + "','" + pregunta.getOpcion4()
                 + "','" + pregunta.getRespuestaCorrecta()
                 + "','" + pregunta.getNivelDificultad()
-                + "','" + tema + "')";
+                + "','" + pregunta.getTema() + "')";
         try {
             conexion.consulta.execute(sql);
         } catch (SQLException ex) {
@@ -93,7 +93,7 @@ public class operaciones {
         return true;
     }
 
-    boolean guardarEvaluacion(Evaluacion evaluacion, String tema) {
+    public boolean guardarEvaluacion(Evaluacion evaluacion, String tema) {
         String sql = "insert into preguntaSimulacro values(" + evaluacion.getCalificacion()
                 + ",'" + tema + "')";
         try {

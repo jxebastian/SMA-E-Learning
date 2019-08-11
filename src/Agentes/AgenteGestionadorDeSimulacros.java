@@ -47,8 +47,9 @@ public class AgenteGestionadorDeSimulacros extends Agent {
                         PreguntaCreada preguntaCreada = (PreguntaCreada) ce;
                         Pregunta pregunta = preguntaCreada.getPregunta();
                         baseDatos.guardarPreguntaSimulacro(pregunta);
-                        ACLMessage reply = msg.createReply();
+                        ACLMessage reply = new ACLMessage();
                         reply.setPerformative(ACLMessage.INFORM);
+                        reply.addReceiver(id);
                         reply.setContent("creado");
                         this.myAgent.send(reply);
                     }

@@ -33,6 +33,24 @@ public class AgenteInteraccionConElUsuario extends Agent {
         this.addBehaviour(new menu());
     }
 
+    private class respuestaCreacionPreguntaEvaluacion extends CyclicBehaviour {
+
+        @Override
+        public void action() {
+            AID id = new AID();
+            id.setLocalName("AgenteGestionadorDeEvaluaciones");
+            MessageTemplate mt = MessageTemplate.and(
+                    MessageTemplate.MatchSender(id),
+                    MessageTemplate.MatchContent("creado"));
+            ACLMessage msg = myAgent.receive(mt);
+            if (msg != null) {
+                this.myAgent.addBehaviour(new menu());
+            } else {
+                block();
+            }
+        }
+    }
+
     private class respuestaCreacionPreguntaSimulacro extends CyclicBehaviour {
 
         @Override
@@ -62,11 +80,11 @@ public class AgenteInteraccionConElUsuario extends Agent {
             mensaje.setPerformative(ACLMessage.INFORM);
             mensaje.setContent("unidades");
             this.myAgent.send(mensaje);
-            this.myAgent.addBehaviour(new crearPreguntaSimulacro());
+            this.myAgent.addBehaviour(new crearPregunta());
         }
     }
 
-    private class crearPreguntaSimulacro extends CyclicBehaviour {
+    private class crearPregunta extends CyclicBehaviour {
 
         @Override
         public void action() {
@@ -123,23 +141,24 @@ public class AgenteInteraccionConElUsuario extends Agent {
                         PreguntaCreada preguntaCreada = new PreguntaCreada();
                         preguntaCreada.setPregunta(pregunta);
 
+                        ACLMessage mensaje = new ACLMessage();
+                        id = new AID();
                         if (creacionPreguntaSimulacro) {
                             //enviar al agente simulacro
-                            ACLMessage mensaje = new ACLMessage();
-                            id = new AID();
                             id.setLocalName("AgenteGestionadorDeSimulacros");
-                            mensaje.addReceiver(id);
-                            mensaje.setLanguage(codec.getName());
-                            mensaje.setOntology(ontologia.getName());
-                            mensaje.setPerformative(ACLMessage.INFORM);
-                            getContentManager().fillContent(mensaje, preguntaCreada);
-                            this.myAgent.send(mensaje);
                             creacionPreguntaSimulacro = false;
                         } else if (creacionPreguntaEvaluacion) {
-
+                            id.setLocalName("AgenteGestionadorDeEvaluaciones");
+                            creacionPreguntaEvaluacion = false;
                         }
-
+                        mensaje.addReceiver(id);
+                        mensaje.setLanguage(codec.getName());
+                        mensaje.setOntology(ontologia.getName());
+                        mensaje.setPerformative(ACLMessage.INFORM);
+                        getContentManager().fillContent(mensaje, preguntaCreada);
+                        this.myAgent.send(mensaje);
                         this.myAgent.addBehaviour(new respuestaCreacionPreguntaSimulacro());
+                        this.myAgent.addBehaviour(new respuestaCreacionPreguntaEvaluacion());
                     }
                 } catch (Codec.CodecException | OntologyException ex) {
                     Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
@@ -223,6 +242,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
                         this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
                         break;
                     case 3:
+                        this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
                         creacionPreguntaEvaluacion = true;
                         break;
                     default:
