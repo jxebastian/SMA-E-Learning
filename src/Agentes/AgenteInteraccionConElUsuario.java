@@ -12,7 +12,6 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-//import java.util.List;
 import jade.util.leap.List;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -24,6 +23,8 @@ public class AgenteInteraccionConElUsuario extends Agent {
     Scanner entrada = new Scanner(System.in);
     private final Codec codec = new SLCodec();
     private final Ontology ontologia = ElearnigOntology.getInstance();
+    private boolean creacionPreguntaSimulacro = false;
+    private boolean creacionPreguntaEvaluacion = false;
 
     @Override
     protected void setup() {
@@ -122,16 +123,22 @@ public class AgenteInteraccionConElUsuario extends Agent {
                         PreguntaCreada preguntaCreada = new PreguntaCreada();
                         preguntaCreada.setPregunta(pregunta);
 
-                        //enviar al agente simulacro
-                        ACLMessage mensaje = new ACLMessage();
-                        id = new AID();
-                        id.setLocalName("AgenteGestionadorDeSimulacros");
-                        mensaje.addReceiver(id);
-                        mensaje.setLanguage(codec.getName());
-                        mensaje.setOntology(ontologia.getName());
-                        mensaje.setPerformative(ACLMessage.INFORM);
-                        getContentManager().fillContent(mensaje, preguntaCreada);
-                        this.myAgent.send(mensaje);
+                        if (creacionPreguntaSimulacro) {
+                            //enviar al agente simulacro
+                            ACLMessage mensaje = new ACLMessage();
+                            id = new AID();
+                            id.setLocalName("AgenteGestionadorDeSimulacros");
+                            mensaje.addReceiver(id);
+                            mensaje.setLanguage(codec.getName());
+                            mensaje.setOntology(ontologia.getName());
+                            mensaje.setPerformative(ACLMessage.INFORM);
+                            getContentManager().fillContent(mensaje, preguntaCreada);
+                            this.myAgent.send(mensaje);
+                            creacionPreguntaSimulacro = false;
+                        } else if (creacionPreguntaEvaluacion) {
+
+                        }
+
                         this.myAgent.addBehaviour(new respuestaCreacionPreguntaSimulacro());
                     }
                 } catch (Codec.CodecException | OntologyException ex) {
@@ -193,7 +200,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
         @Override
         public void action() {
             boolean bandera = false;
-            do {                
+            do {
                 System.out.println("Menu");
                 System.out.println("Opciones del profesor");
                 System.out.println("1. Crear unidad de conocimiento");
@@ -212,15 +219,18 @@ public class AgenteInteraccionConElUsuario extends Agent {
                         this.myAgent.addBehaviour(new crearUnidadConocimiento());
                         break;
                     case 2:
+                        creacionPreguntaSimulacro = true;
                         this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
+                        break;
+                    case 3:
+                        creacionPreguntaEvaluacion = true;
                         break;
                     default:
                         System.out.println("Ingrese un numero valido");
                         bandera = true;
                         break;
                 }
-            } while (bandera);          
-
+            } while (bandera);
         }
     }
 }
