@@ -192,30 +192,34 @@ public class AgenteInteraccionConElUsuario extends Agent {
 
         @Override
         public void action() {
-            System.out.println("Menu");
-            System.out.println("Opciones del profesor");
-            System.out.println("1. Crear unidad de conocimiento");
-            System.out.println("2. Crear pregunta de simulacro");
-            System.out.println("3. Crear pregunta de evaluacion");
-            System.out.println("5. Crear evalucion");
-            System.out.println("Opciones del estudiante");
-            System.out.println("4. Presentar un simulacro");
-            System.out.println("5. Presentar una evaluacion");
-            System.out.println("Ingrese una opcion");
-            int opcion;
-            opcion = entrada.nextInt();
+            boolean bandera = false;
+            do {                
+                System.out.println("Menu");
+                System.out.println("Opciones del profesor");
+                System.out.println("1. Crear unidad de conocimiento");
+                System.out.println("2. Crear pregunta de simulacro");
+                System.out.println("3. Crear pregunta de evaluacion");
+                System.out.println("4. Crear evalucion");
+                System.out.println("Opciones del estudiante");
+                System.out.println("5. Presentar un simulacro");
+                System.out.println("6. Presentar una evaluacion");
+                System.out.println("Ingrese una opcion");
+                int opcion;
+                opcion = entrada.nextInt();
 
-            switch (opcion) {
-                case 1:
-                    this.myAgent.addBehaviour(new crearUnidadConocimiento());
-                    break;
-                case 2:
-                    this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
-                    break;
-                default:
-                    System.out.println("Ingrese un numero valido");
-                    break;
-            }
+                switch (opcion) {
+                    case 1:
+                        this.myAgent.addBehaviour(new crearUnidadConocimiento());
+                        break;
+                    case 2:
+                        this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
+                        break;
+                    default:
+                        System.out.println("Ingrese un numero valido");
+                        bandera = true;
+                        break;
+                }
+            } while (bandera);          
 
         }
     }

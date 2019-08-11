@@ -86,7 +86,7 @@ public class AgenteGestionadorDeUnidadesDeConocimiento extends Agent {
                         UnidadDeConocimiento unidadDeConocimiento = unidadDeConocimientoCreada.getUnidadDeConocimiento();
                         baseDatos.guardarUnidadDeConocimiento(unidadDeConocimiento.getTema());
                         System.out.println("Unidad de conocimiento creada");
-                        ACLMessage reply = msg.createReply();
+                        ACLMessage reply = new ACLMessage();
                         reply.setPerformative(ACLMessage.INFORM);
                         reply.addReceiver(id);
                         reply.setContent("creado");
