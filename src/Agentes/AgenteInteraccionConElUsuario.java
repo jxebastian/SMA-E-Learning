@@ -12,7 +12,6 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-//import java.util.List;
 import jade.util.leap.List;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -25,12 +24,82 @@ public class AgenteInteraccionConElUsuario extends Agent {
     private final Codec codec = new SLCodec();
     private final Ontology ontologia = ElearnigOntology.getInstance();
     private boolean hacerSimulacro = false;
+    private boolean creacionPreguntaSimulacro = false;
+    private boolean creacionPreguntaEvaluacion = false;
+    private boolean creacionPregunta = false;
+    private boolean creacionEvaluacion = false;
 
     @Override
     protected void setup() {
         getContentManager().registerLanguage(codec);
         getContentManager().registerOntology(ontologia);
         this.addBehaviour(new menu());
+    }
+
+    private static class crearEvaluacion extends OneShotBehaviour {
+
+        private UnidadesDeConocimientos unidades;
+
+        private crearEvaluacion(UnidadesDeConocimientos unidades) {
+            this.unidades = unidades;
+        }
+
+        @Override
+        public void action() {
+
+        }
+    }
+
+    private class protocoloUDC extends CyclicBehaviour {
+
+        @Override
+        public void action() {
+            AID id = new AID();
+            id.setLocalName("AgenteGestionadorDeUnidadesDeConocimiento");
+            MessageTemplate mt = MessageTemplate.and(
+                    MessageTemplate.MatchSender(id),
+                    MessageTemplate.MatchOntology(ontologia.getName()));
+            ACLMessage msg = myAgent.receive(mt);
+            if (msg != null) {
+                try {
+                    ContentElement ce = getContentManager().extractContent(msg);
+                    if (ce instanceof UnidadesDeConocimientosCreada) {
+                        UnidadesDeConocimientosCreada unidadesCreada = (UnidadesDeConocimientosCreada) ce;
+                        UnidadesDeConocimientos unidades = unidadesCreada.getUnidades();
+                        if (creacionPregunta) {
+                            this.myAgent.addBehaviour(new crearPregunta(unidades));
+                        } else if (creacionEvaluacion) {
+                            this.myAgent.addBehaviour(new crearEvaluacion(unidades));
+                        } else if (hacerSimulacro) {
+                            this.myAgent.addBehaviour(new presentarSimulacro(unidades));
+                        }
+                    }
+                } catch (Codec.CodecException | OntologyException ex) {
+                    Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                block();
+            }
+        }
+
+    }
+
+    private class respuestaCreacionPreguntaEvaluacion extends CyclicBehaviour {
+
+        @Override
+        public void action() {
+            AID id = new AID();
+            id.setLocalName("AgenteGestionadorDeEvaluaciones");
+            MessageTemplate mt = MessageTemplate.and(
+                    MessageTemplate.MatchSender(id),
+                    MessageTemplate.MatchContent("creado"));
+            ACLMessage msg = myAgent.receive(mt);
+            if (msg != null) {
+                this.myAgent.addBehaviour(new menu());
+            } else {
+                block();
+            }
+        }
     }
 
     private class respuestaCreacionPreguntaSimulacro extends CyclicBehaviour {
@@ -62,84 +131,83 @@ public class AgenteInteraccionConElUsuario extends Agent {
             mensaje.setPerformative(ACLMessage.INFORM);
             mensaje.setContent("unidades");
             this.myAgent.send(mensaje);
-            // this.myAgent.addBehaviour(new crearPreguntaSimulacro());
+            this.myAgent.addBehaviour(new protocoloUDC());
         }
     }
 
-    private class crearPreguntaSimulacro extends CyclicBehaviour {
+    private class crearPregunta extends OneShotBehaviour {
+
+        private final UnidadesDeConocimientos unidades;
+
+        private crearPregunta(UnidadesDeConocimientos unidades) {
+            this.unidades = unidades;
+        }
 
         @Override
         public void action() {
-            AID id = new AID();
-            id.setLocalName("AgenteGestionadorDeUnidadesDeConocimiento");
-            MessageTemplate mt = MessageTemplate.and(
-                    MessageTemplate.MatchSender(id),
-                    MessageTemplate.MatchOntology(ontologia.getName()));
-            ACLMessage msg = myAgent.receive(mt);
-            if (msg != null) {
-                try {
-                    ContentElement ce = getContentManager().extractContent(msg);
-                    if (ce instanceof UnidadesDeConocimientosCreada) {
-                        UnidadesDeConocimientosCreada unidadesCreada = (UnidadesDeConocimientosCreada) ce;
-                        UnidadesDeConocimientos unidades = unidadesCreada.getUnidades();
-                        List unidadesDeConocimientos = unidades.getUnidadesDeConocimientos();
-                        System.out.println("Para crear una pregunta de simulacro\n"
-                                + "se debe seleccionar un tema para asociarlo a la pregunta");
-                        System.out.println("Lista de tema que hay, seleccione una opcion");
-                        for (int i = 0; i < unidadesDeConocimientos.size(); i++) {
-                            UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(i);
-                            System.out.println(i + 1 + ". " + unidad.getTema());
-                        }
-                        int opcion = entrada.nextInt();
-                        Pregunta pregunta = new Pregunta();
-                        UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(opcion - 1);
-                        //datos para la creacion de la pregunta
-                        System.out.println("Ingresar los datos para la pregunta");
-                        System.out.println("Ingrese enunciado");
-                        String next;
-                        next = entrada.next();
-                        pregunta.setEnunciado(next);
-                        System.out.println("Ingrese opcion 1");
-                        next = entrada.next();
-                        pregunta.setOpcion1(next);
-                        System.out.println("Ingrese opcion 2");
-                        next = entrada.next();
-                        pregunta.setOpcion2(next);
-                        System.out.println("Ingrese opcion 3");
-                        next = entrada.next();
-                        pregunta.setOpcion3(next);
-                        System.out.println("Ingrese opcion 4");
-                        next = entrada.next();
-                        pregunta.setOpcion4(next);
-                        System.out.println("Ingrese la opcion correcta");
-                        next = entrada.next();
-                        pregunta.setRespuestaCorrecta(next);
-                        System.out.println("Ingrese nivel de dificultad\n"
-                                + "facil\n" + "medio\n" + "dificil");
-                        next = entrada.next();
-                        pregunta.setNivelDificultad(next);
-                        System.out.println("--fin--");
-                        pregunta.setTema(unidad.getTema());
-                        PreguntaCreada preguntaCreada = new PreguntaCreada();
-                        preguntaCreada.setPregunta(pregunta);
-
-                        //enviar al agente simulacro
-                        ACLMessage mensaje = new ACLMessage();
-                        id = new AID();
-                        id.setLocalName("AgenteGestionadorDeSimulacros");
-                        mensaje.addReceiver(id);
-                        mensaje.setLanguage(codec.getName());
-                        mensaje.setOntology(ontologia.getName());
-                        mensaje.setPerformative(ACLMessage.INFORM);
-                        getContentManager().fillContent(mensaje, preguntaCreada);
-                        this.myAgent.send(mensaje);
-                        this.myAgent.addBehaviour(new respuestaCreacionPreguntaSimulacro());
-                    }
-                } catch (Codec.CodecException | OntologyException ex) {
-                    Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+            try {
+                List unidadesDeConocimientos = this.unidades.getUnidadesDeConocimientos();
+                System.out.println("Para crear una pregunta de simulacro\n"
+                        + "se debe seleccionar un tema para asociarlo a la pregunta");
+                System.out.println("Lista de tema que hay, seleccione una opcion");
+                for (int i = 0; i < unidadesDeConocimientos.size(); i++) {
+                    UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(i);
+                    System.out.println(i + 1 + ". " + unidad.getTema());
                 }
-            } else {
-                block();
+                int opcion = entrada.nextInt();
+                Pregunta pregunta = new Pregunta();
+                UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(opcion - 1);
+                //datos para la creacion de la pregunta
+                System.out.println("Ingresar los datos para la pregunta");
+                System.out.println("Ingrese enunciado");
+                String next;
+                next = entrada.next();
+                pregunta.setEnunciado(next);
+                System.out.println("Ingrese opcion 1");
+                next = entrada.next();
+                pregunta.setOpcion1(next);
+                System.out.println("Ingrese opcion 2");
+                next = entrada.next();
+                pregunta.setOpcion2(next);
+                System.out.println("Ingrese opcion 3");
+                next = entrada.next();
+                pregunta.setOpcion3(next);
+                System.out.println("Ingrese opcion 4");
+                next = entrada.next();
+                pregunta.setOpcion4(next);
+                System.out.println("Ingrese la opcion correcta");
+                next = entrada.next();
+                pregunta.setRespuestaCorrecta(next);
+                System.out.println("Ingrese nivel de dificultad\n"
+                        + "facil\n" + "medio\n" + "dificil");
+                next = entrada.next();
+                pregunta.setNivelDificultad(next);
+                System.out.println("--fin--");
+                pregunta.setTema(unidad.getTema());
+                PreguntaCreada preguntaCreada = new PreguntaCreada();
+                preguntaCreada.setPregunta(pregunta);
+                ACLMessage mensaje = new ACLMessage();
+                AID id = new AID();
+                if (creacionPreguntaSimulacro) {
+                    //enviar al agente simulacro
+                    id.setLocalName("AgenteGestionadorDeSimulacros");
+                    creacionPreguntaSimulacro = false;
+                } else if (creacionPreguntaEvaluacion) {
+                    id.setLocalName("AgenteGestionadorDeEvaluaciones");
+                    creacionPreguntaEvaluacion = false;
+                }
+                creacionPregunta = false;
+                mensaje.addReceiver(id);
+                mensaje.setLanguage(codec.getName());
+                mensaje.setOntology(ontologia.getName());
+                mensaje.setPerformative(ACLMessage.INFORM);
+                getContentManager().fillContent(mensaje, preguntaCreada);
+                this.myAgent.send(mensaje);
+                this.myAgent.addBehaviour(new respuestaCreacionPreguntaSimulacro());
+                this.myAgent.addBehaviour(new respuestaCreacionPreguntaEvaluacion());
+
+            } catch (Codec.CodecException | OntologyException ex) {
+                Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -189,51 +257,40 @@ public class AgenteInteraccionConElUsuario extends Agent {
         }
     }
 
-    private class presentarSimulacro extends CyclicBehaviour {
+    private class presentarSimulacro extends OneShotBehaviour {
+
+        private UnidadesDeConocimientos unidades;
+
+        public presentarSimulacro (UnidadesDeConocimientos unidades) {
+            this.unidades = unidades;
+        }
 
         @Override
-        public void action() {                      
-            AID id = new AID();
-            id.setLocalName("AgenteGestionadorDeUnidadesDeConocimiento");
-            MessageTemplate mt = MessageTemplate.and(
-                    MessageTemplate.MatchSender(id),
-                    MessageTemplate.MatchOntology(ontologia.getName()));
-            ACLMessage msg = myAgent.receive(mt);
-            if (msg != null) {
-                try {
-                    ContentElement ce = getContentManager().extractContent(msg);
-                    if (ce instanceof UnidadesDeConocimientosCreada) {                        
-                        UnidadesDeConocimientosCreada unidadesCreada = (UnidadesDeConocimientosCreada) ce;
-                        UnidadesDeConocimientos unidades = unidadesCreada.getUnidades();
-                        List unidadesDeConocimientos = unidades.getUnidadesDeConocimientos();
-                        System.out.println("Escoger tema de simulacro");  
-                        for (int i = 0; i < unidadesDeConocimientos.size(); i++) {
-                            UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(i);
-                            System.out.println(i + 1 + ". " + unidad.getTema());
-                        }
-                        int opcion = entrada.nextInt();
-                        UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(opcion - 1);
-                        UnidadDeConocimientoCreada unidadCreada = new UnidadDeConocimientoCreada();
-                        unidadCreada.setUnidadDeConocimiento(unidad);
-
-                        // enviar al agente simulacro
-                        ACLMessage mensaje = new ACLMessage();
-                        id = new AID();
-                        id.setLocalName("AgenteGestionadorDeSimulacros");
-                        mensaje.addReceiver(id);
-                        mensaje.setLanguage(codec.getName());
-                        mensaje.setOntology(ontologia.getName());
-                        mensaje.setPerformative(ACLMessage.INFORM);
-                        getContentManager().fillContent(mensaje, unidadCreada);
-                        this.myAgent.send(mensaje);
-                        //TODO don't forget Oct 3
-                        // this.myAgent.addBehaviour(new respuestaCreacionPreguntaSimulacro());
-                    }
-                } catch (Codec.CodecException | OntologyException ex) {
-                    Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+        public void action() {
+            try {              
+                List unidadesDeConocimientos = this.unidades.getUnidadesDeConocimientos();
+                System.out.println("Escoger tema de simulacro");  
+                for (int i = 0; i < unidadesDeConocimientos.size(); i++) {
+                    UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(i);
+                    System.out.println(i + 1 + ". " + unidad.getTema());
                 }
-            } else {
-                block();
+                int opcion = entrada.nextInt();
+                UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(opcion - 1);
+                UnidadDeConocimientoCreada unidadCreada = new UnidadDeConocimientoCreada();
+                unidadCreada.setUnidadDeConocimiento(unidad);
+
+                // enviar al agente simulacro
+                ACLMessage mensaje = new ACLMessage();
+                AID id = new AID();
+                id.setLocalName("AgenteGestionadorDeSimulacros");
+                mensaje.addReceiver(id);
+                mensaje.setLanguage(codec.getName());
+                mensaje.setOntology(ontologia.getName());
+                mensaje.setPerformative(ACLMessage.INFORM);
+                getContentManager().fillContent(mensaje, unidadCreada);
+                    this.myAgent.send(mensaje);                
+            } catch (Codec.CodecException | OntologyException ex) {
+                Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -243,7 +300,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
         @Override
         public void action() {
             boolean bandera = false;
-            do {                
+            do {
                 System.out.println("Menu");
                 System.out.println("Opciones del profesor");
                 System.out.println("1. Crear unidad de conocimiento");
@@ -262,21 +319,28 @@ public class AgenteInteraccionConElUsuario extends Agent {
                         this.myAgent.addBehaviour(new crearUnidadConocimiento());
                         break;
                     case 2:
+                        creacionPregunta = true;
                         this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
-                        this.myAgent.addBehaviour(new crearPreguntaSimulacro());
+                        break;
+                    case 3:
+                        creacionPregunta = true;
+                        this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
+                        break;
+                    case 4:
+                        creacionEvaluacion = true;
+                        this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
                         break;
                     case 5:
                         hacerSimulacro = true;
                         this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
-                        this.myAgent.addBehaviour(new presentarSimulacro());
+                        // this.myAgent.addBehaviour(new presentarSimulacro());
                         break;
                     default:
                         System.out.println("Ingrese un numero valido");
                         bandera = true;
                         break;
                 }
-            } while (bandera);          
-
+            } while (bandera);
         }
     }
 }

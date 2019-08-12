@@ -13,6 +13,7 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.util.leap.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import ontologia.ElearnigOntology;
@@ -48,8 +49,9 @@ public class AgenteGestionadorDeSimulacros extends Agent {
                         PreguntaCreada preguntaCreada = (PreguntaCreada) ce;
                         Pregunta pregunta = preguntaCreada.getPregunta();
                         baseDatos.guardarPreguntaSimulacro(pregunta);
-                        ACLMessage reply = msg.createReply();
+                        ACLMessage reply = new ACLMessage();
                         reply.setPerformative(ACLMessage.INFORM);
+                        reply.addReceiver(id);
                         reply.setContent("creado");
                         this.myAgent.send(reply);
                     } else if(ce instanceof UnidadDeConocimientoCreada) {
@@ -69,14 +71,32 @@ public class AgenteGestionadorDeSimulacros extends Agent {
     private class CrearSimulacro extends OneShotBehaviour {
 
         private UnidadDeConocimiento unidad;
+        
         public CrearSimulacro(UnidadDeConocimiento unidad) {
             this.unidad = unidad;
         }
 
         @Override
         public void action() {
+            Simulacro simulacro = (Simulacro) baseDatos.obtenerSimulacro(this.unidad.getTema());
             
-            System.out.println("Daniel x2" + this.unidad.getTema());
+            if (simulacro != null) {
+                if (simulacro.getCalificacion() >= 3) {
+                    
+                }
+            } else {
+                System.out.println("upsi, toy vacio");
+                Object obj = crearSimulacro("facil", this.unidad.getTema());
+                //this.myAgent.addBehaviour(new CrearSimulacro(unidad)); 
+            }
+            //System.out.println(simul);
+        }
+        
+        private Object crearSimulacro(String dificultad, String tema) {
+            List preguntas = baseDatos.obtenerPreguntasParaSimulacro(dificultad, tema);
+            System.out.println(preguntas.size());
+            
+            return preguntas;
         }
     }
 }

@@ -8,7 +8,7 @@ import jade.core.*;
 /**
 * Protege name: SimulacroCalificado
 * @author ontology bean generator
-* @version 2019/08/9, 13:02:56
+* @version 2019/08/11, 20:51:26
 */
 public class SimulacroCalificado implements Predicate {
 

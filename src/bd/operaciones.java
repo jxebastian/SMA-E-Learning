@@ -48,16 +48,16 @@ public class operaciones {
         return true;
     }
 
-    boolean guardarPreguntaEvaluacion(Pregunta pregunta, String tema) {
+    public boolean guardarPreguntaEvaluacion(Pregunta pregunta) {
         conexion.conectar();
-        String sql = "insert into preguntaEvaluacion values('" + pregunta.getEnunciado()
+        String sql = "insert into preguntaEvaluacion values(NULL,'" + pregunta.getEnunciado()
                 + "','" + pregunta.getOpcion1()
                 + "','" + pregunta.getOpcion2()
                 + "','" + pregunta.getOpcion3()
                 + "','" + pregunta.getOpcion4()
                 + "','" + pregunta.getRespuestaCorrecta()
                 + "','" + pregunta.getNivelDificultad()
-                + "','" + tema + "')";
+                + "','" + pregunta.getTema() + "')";
         try {
             conexion.consulta.execute(sql);
         } catch (SQLException ex) {
@@ -91,7 +91,7 @@ public class operaciones {
         return true;
     }
 
-    boolean guardarEvaluacion(Evaluacion evaluacion, String tema) {
+    public boolean guardarEvaluacion(Evaluacion evaluacion, String tema) {
         String sql = "insert into preguntaSimulacro values(" + evaluacion.getCalificacion()
                 + ",'" + tema + "')";
         try {
@@ -144,17 +144,23 @@ public class operaciones {
             }
         } catch (SQLException ex) {
             Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
+        }finally {
+            try {
+                conexion.consulta.close();
+                conexion.conexion.close();
+            } catch (SQLException e) {
+            }
         }
         return unidades;
     }
 
-    public Simulacro obtenerSimulacro(String unidad) {
+    public Object obtenerSimulacro(String unidad) {
         conexion.conectar();
         Simulacro simulacro = null;
-        String sql = "Select * from simulacro WHERE tema=" + unidad;
+        String sql = "Select * from simulacro WHERE tema='" + unidad +"'";
         try {
             ResultSet resultado = conexion.consulta.executeQuery(sql);
-            while(resultado.last()){
+            while(resultado.next()){
                 simulacro = new Simulacro();
                 simulacro.setTema(resultado.getString("tema"));
                 simulacro.setAnalisis(resultado.getString("analisis"));
@@ -163,7 +169,44 @@ public class operaciones {
             }
         } catch (SQLException ex) {
             Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
+        }finally {
+            try {
+                conexion.consulta.close();
+                conexion.conexion.close();
+            } catch (SQLException e) {
+            }
         }
         return simulacro;
+    }
+    
+    public List obtenerPreguntasParaSimulacro(String dificultad, String tema) {
+        List preguntas = new ArrayList();
+        conexion.conectar();
+        String sql = "Select * from preguntaSimulacro Where nivelDificultad='" + dificultad + "' and unidadConocimiento='" + tema + "'";
+        try {
+            ResultSet resultado = conexion.consulta.executeQuery(sql);
+            while(resultado.next()){
+                System.out.println("check");
+                Pregunta pregunta = new Pregunta();
+                pregunta.setTema(resultado.getString("unidadConocimiento"));
+                pregunta.setEnunciado(resultado.getString("enunciado"));
+                pregunta.setNivelDificultad(resultado.getString("nivelDificultad"));
+                pregunta.setOpcion1(resultado.getString("opcion1"));
+                pregunta.setOpcion2(resultado.getString("opcion2"));
+                pregunta.setOpcion3(resultado.getString("opcion3"));
+                pregunta.setOpcion4(resultado.getString("opcion4"));
+                pregunta.setRespuestaCorrecta(resultado.getString("respuestaCorrecta"));
+                preguntas.add(pregunta);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
+        }finally {
+            try {
+                conexion.consulta.close();
+                conexion.conexion.close();
+            } catch (SQLException e) {
+            }
+        }
+        return preguntas;
     }
 }
