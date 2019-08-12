@@ -71,7 +71,7 @@ public class AgenteGestionadorDeSimulacros extends Agent {
     private class CrearSimulacro extends OneShotBehaviour {
 
         private UnidadDeConocimiento unidad;
-        
+        private Object obj = null;
         public CrearSimulacro(UnidadDeConocimiento unidad) {
             this.unidad = unidad;
         }
@@ -82,19 +82,23 @@ public class AgenteGestionadorDeSimulacros extends Agent {
             
             if (simulacro != null) {
                 if (simulacro.getCalificacion() >= 3) {
-                    
+                    if (simulacro.getNivelDificultad().equals("facil")) {
+                        obj = crearSimulacro("medio", this.unidad.getTema());
+                    }else {
+                        obj = crearSimulacro("dificil", this.unidad.getTema());
+                    }
                 }
             } else {
                 System.out.println("upsi, toy vacio");
-                Object obj = crearSimulacro("facil", this.unidad.getTema());
+                obj = crearSimulacro("facil", this.unidad.getTema());
                 //this.myAgent.addBehaviour(new CrearSimulacro(unidad)); 
             }
-            //System.out.println(simul);
+            System.out.println(obj);
+            
         }
         
         private Object crearSimulacro(String dificultad, String tema) {
             List preguntas = baseDatos.obtenerPreguntasParaSimulacro(dificultad, tema);
-            System.out.println(preguntas.size());
             
             return preguntas;
         }

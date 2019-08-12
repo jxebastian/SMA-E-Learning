@@ -186,7 +186,6 @@ public class operaciones {
         try {
             ResultSet resultado = conexion.consulta.executeQuery(sql);
             while(resultado.next()){
-                System.out.println("check");
                 Pregunta pregunta = new Pregunta();
                 pregunta.setTema(resultado.getString("unidadConocimiento"));
                 pregunta.setEnunciado(resultado.getString("enunciado"));
