@@ -6,11 +6,11 @@ import jade.util.leap.*;
 import jade.core.*;
 
 /**
-* Protege name: SimulacroCreado
+* Protege name: SimulacroPresentado
 * @author ontology bean generator
 * @version 2019/08/11, 20:51:26
 */
-public class SimulacroCreado implements Predicate {
+public class SimulacroPresentado implements Predicate {
 
    /**
 * Protege name: simulacro

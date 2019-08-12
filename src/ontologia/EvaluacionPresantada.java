@@ -6,11 +6,11 @@ import jade.util.leap.*;
 import jade.core.*;
 
 /**
-* Protege name: EvaluacionCreada
+* Protege name: EvaluacionPresantada
 * @author ontology bean generator
 * @version 2019/08/11, 20:51:26
 */
-public class EvaluacionCreada implements Predicate {
+public class EvaluacionPresantada implements Predicate {
 
    /**
 * Protege name: evaluacion

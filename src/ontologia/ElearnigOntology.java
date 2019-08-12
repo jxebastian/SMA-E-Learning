@@ -9,7 +9,7 @@ import jade.core.CaseInsensitiveString;
 
 /** file: ElearnigOntology.java
  * @author ontology bean generator
- * @version 2019/08/9, 13:02:56
+ * @version 2019/08/11, 20:51:26
  */
 public class ElearnigOntology extends jade.content.onto.Ontology  {
   //NAME
@@ -25,10 +25,14 @@ public class ElearnigOntology extends jade.content.onto.Ontology  {
    // VOCABULARY
     public static final String RECOMENDACIONDADA_RECOMENDACIONDERESULTADOS="recomendacionDeResultados";
     public static final String RECOMENDACIONDADA="RecomendacionDada";
+    public static final String SIMULACROPRESENTADO_SIMULACRO="simulacro";
+    public static final String SIMULACROPRESENTADO="SimulacroPresentado";
     public static final String PREGUNTACREADA_PREGUNTA="pregunta";
     public static final String PREGUNTACREADA="PreguntaCreada";
     public static final String EVALUACIONCREADA_EVALUACION="evaluacion";
     public static final String EVALUACIONCREADA="EvaluacionCreada";
+    public static final String EVALUACIONPRESANTADA_EVALUACION="evaluacion";
+    public static final String EVALUACIONPRESANTADA="EvaluacionPresantada";
     public static final String SIMULACROCREADO_SIMULACRO="simulacro";
     public static final String SIMULACROCREADO="SimulacroCreado";
     public static final String ANALISISSIMULACRO_SIMULACRO="simulacro";
@@ -45,13 +49,14 @@ public class ElearnigOntology extends jade.content.onto.Ontology  {
     public static final String EVALUACION_LISTADEPREGUNTAS="listaDePreguntas";
     public static final String EVALUACION_NIVELDIFICULTAD="nivelDificultad";
     public static final String EVALUACION_ANALISIS="analisis";
+    public static final String EVALUACION_TEMA="tema";
     public static final String EVALUACION="Evaluacion";
     public static final String UNIDADESDECONOCIMIENTOS_UNIDADESDECONOCIMIENTOS="unidadesDeConocimientos";
     public static final String UNIDADESDECONOCIMIENTOS="UnidadesDeConocimientos";
     public static final String PREGUNTA_ENUNCIADO="enunciado";
-    public static final String PREGUNTA_NIVELDIFICULTAD="nivelDificultad";
-    public static final String PREGUNTA_RESPUESTACORRECTA="respuestaCorrecta";
     public static final String PREGUNTA_OPCION4="opcion4";
+    public static final String PREGUNTA_RESPUESTACORRECTA="respuestaCorrecta";
+    public static final String PREGUNTA_NIVELDIFICULTAD="nivelDificultad";
     public static final String PREGUNTA_OPCION1="opcion1";
     public static final String PREGUNTA_OPCION3="opcion3";
     public static final String PREGUNTA_OPCION2="opcion2";
@@ -66,6 +71,7 @@ public class ElearnigOntology extends jade.content.onto.Ontology  {
     public static final String SIMULACRO_LISTADEPREGUNTAS="listaDePreguntas";
     public static final String SIMULACRO_NIVELDIFICULTAD="nivelDificultad";
     public static final String SIMULACRO_ANALISIS="analisis";
+    public static final String SIMULACRO_TEMA="tema";
     public static final String SIMULACRO="Simulacro";
 
   /**
@@ -106,15 +112,20 @@ public class ElearnigOntology extends jade.content.onto.Ontology  {
     add(analisisSimulacroSchema, ontologia.AnalisisSimulacro.class);
     PredicateSchema simulacroCreadoSchema = new PredicateSchema(SIMULACROCREADO);
     add(simulacroCreadoSchema, ontologia.SimulacroCreado.class);
+    PredicateSchema evaluacionPresantadaSchema = new PredicateSchema(EVALUACIONPRESANTADA);
+    add(evaluacionPresantadaSchema, ontologia.EvaluacionPresantada.class);
     PredicateSchema evaluacionCreadaSchema = new PredicateSchema(EVALUACIONCREADA);
     add(evaluacionCreadaSchema, ontologia.EvaluacionCreada.class);
     PredicateSchema preguntaCreadaSchema = new PredicateSchema(PREGUNTACREADA);
     add(preguntaCreadaSchema, ontologia.PreguntaCreada.class);
+    PredicateSchema simulacroPresentadoSchema = new PredicateSchema(SIMULACROPRESENTADO);
+    add(simulacroPresentadoSchema, ontologia.SimulacroPresentado.class);
     PredicateSchema recomendacionDadaSchema = new PredicateSchema(RECOMENDACIONDADA);
     add(recomendacionDadaSchema, ontologia.RecomendacionDada.class);
 
 
     // adding fields
+    simulacroSchema.add(SIMULACRO_TEMA, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     simulacroSchema.add(SIMULACRO_ANALISIS, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     simulacroSchema.add(SIMULACRO_NIVELDIFICULTAD, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     simulacroSchema.add(SIMULACRO_LISTADEPREGUNTAS, preguntaSchema, 0, ObjectSchema.UNLIMITED);
@@ -126,11 +137,12 @@ public class ElearnigOntology extends jade.content.onto.Ontology  {
     preguntaSchema.add(PREGUNTA_OPCION2, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     preguntaSchema.add(PREGUNTA_OPCION3, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     preguntaSchema.add(PREGUNTA_OPCION1, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
-    preguntaSchema.add(PREGUNTA_OPCION4, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
-    preguntaSchema.add(PREGUNTA_RESPUESTACORRECTA, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     preguntaSchema.add(PREGUNTA_NIVELDIFICULTAD, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
+    preguntaSchema.add(PREGUNTA_RESPUESTACORRECTA, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
+    preguntaSchema.add(PREGUNTA_OPCION4, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     preguntaSchema.add(PREGUNTA_ENUNCIADO, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     unidadesDeConocimientosSchema.add(UNIDADESDECONOCIMIENTOS_UNIDADESDECONOCIMIENTOS, unidadDeConocimientoSchema, 0, ObjectSchema.UNLIMITED);
+    evaluacionSchema.add(EVALUACION_TEMA, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     evaluacionSchema.add(EVALUACION_ANALISIS, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     evaluacionSchema.add(EVALUACION_NIVELDIFICULTAD, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     evaluacionSchema.add(EVALUACION_LISTADEPREGUNTAS, preguntaSchema, 0, ObjectSchema.UNLIMITED);
@@ -141,8 +153,10 @@ public class ElearnigOntology extends jade.content.onto.Ontology  {
     unidadDeConocimientoCreadaSchema.add(UNIDADDECONOCIMIENTOCREADA_UNIDADDECONOCIMIENTO, unidadDeConocimientoSchema, ObjectSchema.OPTIONAL);
     analisisSimulacroSchema.add(ANALISISSIMULACRO_SIMULACRO, simulacroSchema, ObjectSchema.OPTIONAL);
     simulacroCreadoSchema.add(SIMULACROCREADO_SIMULACRO, simulacroSchema, ObjectSchema.OPTIONAL);
+    evaluacionPresantadaSchema.add(EVALUACIONPRESANTADA_EVALUACION, evaluacionSchema, ObjectSchema.OPTIONAL);
     evaluacionCreadaSchema.add(EVALUACIONCREADA_EVALUACION, evaluacionSchema, ObjectSchema.OPTIONAL);
     preguntaCreadaSchema.add(PREGUNTACREADA_PREGUNTA, preguntaSchema, ObjectSchema.OPTIONAL);
+    simulacroPresentadoSchema.add(SIMULACROPRESENTADO_SIMULACRO, simulacroSchema, ObjectSchema.OPTIONAL);
     recomendacionDadaSchema.add(RECOMENDACIONDADA_RECOMENDACIONDERESULTADOS, recomendacionDeSimulacroSchema, ObjectSchema.OPTIONAL);
 
     // adding name mappings
