@@ -9,7 +9,7 @@ import jade.core.CaseInsensitiveString;
 
 /** file: ElearnigOntology.java
  * @author ontology bean generator
- * @version 2019/08/11, 20:51:26
+ * @version 2019/08/12, 15:45:38
  */
 public class ElearnigOntology extends jade.content.onto.Ontology  {
   //NAME
@@ -53,10 +53,11 @@ public class ElearnigOntology extends jade.content.onto.Ontology  {
     public static final String EVALUACION="Evaluacion";
     public static final String UNIDADESDECONOCIMIENTOS_UNIDADESDECONOCIMIENTOS="unidadesDeConocimientos";
     public static final String UNIDADESDECONOCIMIENTOS="UnidadesDeConocimientos";
+    public static final String PREGUNTA_ID="id";
     public static final String PREGUNTA_ENUNCIADO="enunciado";
-    public static final String PREGUNTA_OPCION4="opcion4";
-    public static final String PREGUNTA_RESPUESTACORRECTA="respuestaCorrecta";
     public static final String PREGUNTA_NIVELDIFICULTAD="nivelDificultad";
+    public static final String PREGUNTA_RESPUESTACORRECTA="respuestaCorrecta";
+    public static final String PREGUNTA_OPCION4="opcion4";
     public static final String PREGUNTA_OPCION1="opcion1";
     public static final String PREGUNTA_OPCION3="opcion3";
     public static final String PREGUNTA_OPCION2="opcion2";
@@ -137,10 +138,11 @@ public class ElearnigOntology extends jade.content.onto.Ontology  {
     preguntaSchema.add(PREGUNTA_OPCION2, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     preguntaSchema.add(PREGUNTA_OPCION3, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     preguntaSchema.add(PREGUNTA_OPCION1, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
-    preguntaSchema.add(PREGUNTA_NIVELDIFICULTAD, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
-    preguntaSchema.add(PREGUNTA_RESPUESTACORRECTA, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     preguntaSchema.add(PREGUNTA_OPCION4, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
+    preguntaSchema.add(PREGUNTA_RESPUESTACORRECTA, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
+    preguntaSchema.add(PREGUNTA_NIVELDIFICULTAD, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     preguntaSchema.add(PREGUNTA_ENUNCIADO, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
+    preguntaSchema.add(PREGUNTA_ID, (TermSchema)getSchema(BasicOntology.INTEGER), ObjectSchema.OPTIONAL);
     unidadesDeConocimientosSchema.add(UNIDADESDECONOCIMIENTOS_UNIDADESDECONOCIMIENTOS, unidadDeConocimientoSchema, 0, ObjectSchema.UNLIMITED);
     evaluacionSchema.add(EVALUACION_TEMA, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);
     evaluacionSchema.add(EVALUACION_ANALISIS, (TermSchema)getSchema(BasicOntology.STRING), ObjectSchema.OPTIONAL);

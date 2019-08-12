@@ -8,7 +8,7 @@ import jade.core.*;
 /**
 * Protege name: Pregunta
 * @author ontology bean generator
-* @version 2019/08/11, 20:51:26
+* @version 2019/08/12, 15:45:38
 */
 public class Pregunta implements Concept {
 
@@ -57,14 +57,14 @@ public class Pregunta implements Concept {
    }
 
    /**
-* Protege name: nivelDificultad
+* Protege name: opcion4
    */
-   private String nivelDificultad;
-   public void setNivelDificultad(String value) { 
-    this.nivelDificultad=value;
+   private String opcion4;
+   public void setOpcion4(String value) { 
+    this.opcion4=value;
    }
-   public String getNivelDificultad() {
-     return this.nivelDificultad;
+   public String getOpcion4() {
+     return this.opcion4;
    }
 
    /**
@@ -79,14 +79,14 @@ public class Pregunta implements Concept {
    }
 
    /**
-* Protege name: opcion4
+* Protege name: nivelDificultad
    */
-   private String opcion4;
-   public void setOpcion4(String value) { 
-    this.opcion4=value;
+   private String nivelDificultad;
+   public void setNivelDificultad(String value) { 
+    this.nivelDificultad=value;
    }
-   public String getOpcion4() {
-     return this.opcion4;
+   public String getNivelDificultad() {
+     return this.nivelDificultad;
    }
 
    /**
@@ -98,6 +98,17 @@ public class Pregunta implements Concept {
    }
    public String getEnunciado() {
      return this.enunciado;
+   }
+
+   /**
+* Protege name: id
+   */
+   private int id;
+   public void setId(int value) { 
+    this.id=value;
+   }
+   public int getId() {
+     return this.id;
    }
 
 }

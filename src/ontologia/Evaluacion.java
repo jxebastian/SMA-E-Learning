@@ -8,7 +8,7 @@ import jade.core.*;
 /**
 * Protege name: Evaluacion
 * @author ontology bean generator
-* @version 2019/08/11, 20:51:26
+* @version 2019/08/12, 15:45:38
 */
 public class Evaluacion implements Concept {
 

@@ -35,7 +35,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
         this.addBehaviour(new menu());
     }
 
-    private static class crearEvaluacion extends OneShotBehaviour {
+    private class crearEvaluacion extends OneShotBehaviour {
 
         private UnidadesDeConocimientos unidades;
 
@@ -45,7 +45,32 @@ public class AgenteInteraccionConElUsuario extends Agent {
 
         @Override
         public void action() {
-
+            List unidadesDeConocimientos = this.unidades.getUnidadesDeConocimientos();
+            System.out.println("Para crear una evaluacion\n"
+                    + "se debe seleccionar un tema");
+            System.out.println("Lista de tema que hay, seleccione una opcion");
+            for (int i = 0; i < unidadesDeConocimientos.size(); i++) {
+                UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(i);
+                System.out.println(i + 1 + ". " + unidad.getTema());
+            }
+            int opcion = entrada.nextInt();
+            UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(opcion - 1);
+            UnidadDeConocimientoCreada unidadDeConocimientoCreada = new UnidadDeConocimientoCreada();
+            unidadDeConocimientoCreada.setUnidadDeConocimiento(unidad);
+            ACLMessage mensaje = new ACLMessage();
+            AID id = new AID();
+            id.setLocalName("AgenteGestionadorDeEvaluaciones");
+            mensaje.addReceiver(id);
+            mensaje.setLanguage(codec.getName());
+            mensaje.setOntology(ontologia.getName());
+            mensaje.setPerformative(ACLMessage.INFORM);
+            try {
+                getContentManager().fillContent(mensaje, unidadDeConocimientoCreada);
+                this.myAgent.send(mensaje);
+                //
+            } catch (Codec.CodecException | OntologyException ex) {
+                Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
@@ -92,6 +117,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
                     MessageTemplate.MatchContent("creado"));
             ACLMessage msg = myAgent.receive(mt);
             if (msg != null) {
+                System.out.println("Pregunta creada");
                 this.myAgent.addBehaviour(new menu());
             } else {
                 block();
@@ -279,10 +305,12 @@ public class AgenteInteraccionConElUsuario extends Agent {
                         break;
                     case 2:
                         creacionPregunta = true;
+                        creacionPreguntaSimulacro = true;
                         this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
                         break;
                     case 3:
                         creacionPregunta = true;
+                        creacionPreguntaEvaluacion = true;
                         this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
                         break;
                     case 4:

@@ -8,26 +8,70 @@ import jade.content.onto.Ontology;
 import jade.content.onto.OntologyException;
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.util.leap.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import ontologia.ElearnigOntology;
-import ontologia.Pregunta;
-import ontologia.PreguntaCreada;
+import ontologia.*;
 
 public class AgenteGestionadorDeEvaluaciones extends Agent {
-     private final operaciones baseDatos = new operaciones();
+
+    private final operaciones baseDatos = new operaciones();
     private final Codec codec = new SLCodec();
     private final Ontology ontologia = ElearnigOntology.getInstance();
+
     @Override
     protected void setup() {
         getContentManager().registerLanguage(codec);
         getContentManager().registerOntology(ontologia);
-        this.addBehaviour(new crearPregunta());
+        this.addBehaviour(new ProtocoloICU());
     }
-        private class crearPregunta extends CyclicBehaviour {
+
+    private class CrearEvaluacion extends OneShotBehaviour {
+        private final UnidadDeConocimiento unidadDeConocimiento;
+        public CrearEvaluacion(UnidadDeConocimiento unidadDeConocimiento) {
+            this.unidadDeConocimiento = unidadDeConocimiento;
+        }
+
+        @Override
+        public void action() {
+            Evaluacion evaluacion = new Evaluacion();
+            evaluacion.setTema(this.unidadDeConocimiento.getTema());
+            List preguntas = baseDatos.obtenerPreguntasEvaluacion(this.unidadDeConocimiento.getTema());
+            if (preguntas.size() == 5){
+                evaluacion.setListaDePreguntas(preguntas);
+                baseDatos.guardarEvaluacion(evaluacion);
+            }else {
+                System.out.println("no se puede");
+            }
+        }
+    }
+
+    private class CrearPregunta extends OneShotBehaviour {
+        private final Pregunta pregunta;
+        private CrearPregunta(Pregunta pregunta) {
+            this.pregunta = pregunta;
+        }
+
+        @Override
+        public void action() {
+            baseDatos.guardarPreguntaEvaluacion(pregunta);
+            ACLMessage mensaje = new ACLMessage();
+            mensaje.setPerformative(ACLMessage.INFORM);
+            AID id = new AID();
+            id.setLocalName("AgenteInteraccionConElUsuario");
+            mensaje.addReceiver(id);
+            mensaje.setContent("creado");
+            this.myAgent.send(mensaje);
+        }
+
+    }
+
+    private class ProtocoloICU extends CyclicBehaviour {
 
         @Override
         public void action() {
@@ -43,17 +87,16 @@ public class AgenteGestionadorDeEvaluaciones extends Agent {
                     if (ce instanceof PreguntaCreada) {
                         PreguntaCreada preguntaCreada = (PreguntaCreada) ce;
                         Pregunta pregunta = preguntaCreada.getPregunta();
-                        baseDatos.guardarPreguntaEvaluacion(pregunta);
-                        ACLMessage reply = new ACLMessage();
-                        reply.setPerformative(ACLMessage.INFORM);
-                        reply.addReceiver(id);
-                        reply.setContent("creado");
-                        this.myAgent.send(reply);
+                        this.myAgent.addBehaviour(new CrearPregunta(pregunta));
+                    } else if (ce instanceof UnidadDeConocimientoCreada) {
+                        UnidadDeConocimientoCreada unidadDeConocimientoCreada = (UnidadDeConocimientoCreada) ce;
+                        UnidadDeConocimiento unidadDeConocimiento = unidadDeConocimientoCreada.getUnidadDeConocimiento();
+                        this.myAgent.addBehaviour(new CrearEvaluacion(unidadDeConocimiento));
                     }
                 } catch (Codec.CodecException | OntologyException ex) {
                     Logger.getLogger(AgenteGestionadorDeSimulacros.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            }else{
+            } else {
                 block();
             }
         }

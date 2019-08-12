@@ -93,13 +93,15 @@ public class operaciones {
         return true;
     }
 
-    public boolean guardarEvaluacion(Evaluacion evaluacion, String tema) {
-        String sql = "insert into preguntaSimulacro values(" + evaluacion.getCalificacion()
-                + ",'" + tema + "')";
+    public boolean guardarEvaluacion(Evaluacion evaluacion) {
+        String sql = "insert into preguntaSimulacro (id, tema) "
+                + "values(NULL,'" + evaluacion.getTema() + "')";
         try {
             conexion.consulta.execute(sql);
-            for (int i=0; i< evaluacion.getListaDePreguntas().size(); i++){
-                // sql = "insert into preguntaXevaluacion values(" + ;
+            for (int i = 0; i < evaluacion.getListaDePreguntas().size(); i++) {
+                Pregunta pregunta = (Pregunta) evaluacion.getListaDePreguntas().get(i);
+                sql = "insert into preguntaXevaluacion values('" + evaluacion.getTema()
+                        +"',"+ pregunta.getId();
             }
         } catch (SQLException ex) {
             Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
@@ -132,14 +134,44 @@ public class operaciones {
         }
         return preguntas;
     }
-    
-    public List obtenerUnidadesDeConocimientos(){
+
+    public List obtenerPreguntasEvaluacion(String tema) {
+        List preguntas = new ArrayList();
+        conexion.conectar();
+        String sql = "select * from preguntaEvaluacion WHERE = '" + tema + "'";
+        try {
+            ResultSet resultado = conexion.consulta.executeQuery(sql);
+            while (resultado.next() && preguntas.size() <= 5) {
+                Pregunta pregunta = new Pregunta();
+                pregunta.setId(Integer.parseInt(resultado.getString("id")));
+                pregunta.setEnunciado(resultado.getString("enunciado"));
+                pregunta.setOpcion1(resultado.getString("opcion1"));
+                pregunta.setOpcion2(resultado.getString("opcion2"));
+                pregunta.setOpcion3(resultado.getString("opcion3"));
+                pregunta.setOpcion4(resultado.getString("opcion4"));
+                pregunta.setRespuestaCorrecta(resultado.getString("respuestaCorrecta"));
+                preguntas.add(pregunta);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        } finally {
+            try {
+                conexion.consulta.close();
+                conexion.conexion.close();
+            } catch (SQLException e) {
+            }
+        }
+        return preguntas;
+    }
+
+    public List obtenerUnidadesDeConocimientos() {
         List unidades = new ArrayList();
         conexion.conectar();
         String sql = "Select * from unidadDeConocimiento";
         try {
             ResultSet resultado = conexion.consulta.executeQuery(sql);
-            while(resultado.next()){
+            while (resultado.next()) {
                 UnidadDeConocimiento unidad = new UnidadDeConocimiento();
                 unidad.setTema(resultado.getString("tema"));
                 unidades.add(unidad);
