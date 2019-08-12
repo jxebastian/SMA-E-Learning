@@ -13,9 +13,7 @@ import java.sql.SQLException;
 //import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import ontologia.Evaluacion;
-import ontologia.Pregunta;
-import ontologia.UnidadDeConocimiento;
+import ontologia.*;
 
 /**
  *
@@ -148,5 +146,24 @@ public class operaciones {
             Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
         }
         return unidades;
+    }
+
+    public Simulacro obtenerSimulacro(String unidad) {
+        conexion.conectar();
+        Simulacro simulacro = null;
+        String sql = "Select * from simulacro WHERE tema=" + unidad;
+        try {
+            ResultSet resultado = conexion.consulta.executeQuery(sql);
+            while(resultado.last()){
+                simulacro = new Simulacro();
+                simulacro.setTema(resultado.getString("tema"));
+                simulacro.setAnalisis(resultado.getString("analisis"));
+                simulacro.setCalificacion(resultado.getInt("calificacion"));
+                simulacro.setNivelDificultad(resultado.getString("nivelDificultad"));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return simulacro;
     }
 }

@@ -10,6 +10,7 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import java.util.logging.Level;
@@ -27,10 +28,10 @@ public class AgenteGestionadorDeSimulacros extends Agent {
     protected void setup() {
         getContentManager().registerLanguage(codec);
         getContentManager().registerOntology(ontologia);
-        this.addBehaviour(new crearPregunta());
+        this.addBehaviour(new ProtocoloICU());
     }
 
-    private class crearPregunta extends CyclicBehaviour {
+    private class ProtocoloICU extends CyclicBehaviour {
 
         @Override
         public void action() {
@@ -51,6 +52,10 @@ public class AgenteGestionadorDeSimulacros extends Agent {
                         reply.setPerformative(ACLMessage.INFORM);
                         reply.setContent("creado");
                         this.myAgent.send(reply);
+                    } else if(ce instanceof UnidadDeConocimientoCreada) {
+                        UnidadDeConocimientoCreada unidadEscogida = (UnidadDeConocimientoCreada) ce;
+                        UnidadDeConocimiento unidad = unidadEscogida.getUnidadDeConocimiento();
+                        this.myAgent.addBehaviour(new CrearSimulacro(unidad));                        
                     }
                 } catch (Codec.CodecException | OntologyException ex) {
                     Logger.getLogger(AgenteGestionadorDeSimulacros.class.getName()).log(Level.SEVERE, null, ex);
@@ -58,6 +63,20 @@ public class AgenteGestionadorDeSimulacros extends Agent {
             }else{
                 block();
             }
+        }
+    }
+
+    private class CrearSimulacro extends OneShotBehaviour {
+
+        private UnidadDeConocimiento unidad;
+        public CrearSimulacro(UnidadDeConocimiento unidad) {
+            this.unidad = unidad;
+        }
+
+        @Override
+        public void action() {
+            
+            System.out.println("Daniel x2" + this.unidad.getTema());
         }
     }
 }
