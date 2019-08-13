@@ -208,4 +208,22 @@ public class operaciones {
         }
         return preguntas;
     }
+    public boolean guardarSimulacro(Simulacro simulacro) {
+        conexion.conectar();
+        String sql = "insert into simulacro values(NULL,'" + simulacro.getTema() 
+                + "'," + simulacro.getCalificacion() + ",'" + simulacro.getNivelDificultad() +"','" + simulacro.getAnalisis() + "')";
+        try {
+            conexion.consulta.execute(sql);
+        } catch (SQLException ex) {
+            Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }finally {
+            try {
+                conexion.consulta.close();
+                conexion.conexion.close();
+            } catch (SQLException e) {
+            }
+        }
+        return true;
+    }
 }

@@ -14,6 +14,7 @@ import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.util.leap.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import ontologia.ElearnigOntology;
@@ -30,6 +31,47 @@ public class AgenteGestionadorDeSimulacros extends Agent {
         getContentManager().registerLanguage(codec);
         getContentManager().registerOntology(ontologia);
         this.addBehaviour(new ProtocoloICU());
+    }
+
+    private class AnalizarSimulacro extends OneShotBehaviour {
+        private final Simulacro simulacro;
+
+        public AnalizarSimulacro(Simulacro simulacro) {
+            this.simulacro = simulacro;
+        }
+
+        @Override
+        public void action() {
+           String dificultad = this.simulacro.getNivelDificultad();
+           int nota = this.simulacro.getCalificacion();
+           String analisis;
+           
+            if (nota < 3) {
+                analisis = "Debes esforzarte más, intenta repasar " + this.simulacro.getTema();
+            }else if (nota < 5) {
+                analisis = "Vas bien, solo falta un poco";
+            }else{
+                analisis = "Excelente!!! sigue asi!!";
+            }
+            this.simulacro.setAnalisis(analisis);
+            baseDatos.guardarSimulacro(simulacro);
+            SimulacroCalificado simulacroCalificado = new SimulacroCalificado();
+            simulacroCalificado.setSimulacro(simulacro);
+            ACLMessage mensaje = new ACLMessage();
+            AID id = new AID();
+            id.setLocalName("AgenteInteraccionConElUsuario");
+            mensaje.addReceiver(id);
+            mensaje.setLanguage(codec.getName());
+            mensaje.setOntology(ontologia.getName());
+            mensaje.setPerformative(ACLMessage.INFORM);
+            try {
+                getContentManager().fillContent(mensaje,simulacroCalificado);
+            } catch (Codec.CodecException | OntologyException ex) {
+                Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            getAgent().send(mensaje);
+            
+        }
     }
 
     private class ProtocoloICU extends CyclicBehaviour {
@@ -58,6 +100,10 @@ public class AgenteGestionadorDeSimulacros extends Agent {
                         UnidadDeConocimientoCreada unidadEscogida = (UnidadDeConocimientoCreada) ce;
                         UnidadDeConocimiento unidad = unidadEscogida.getUnidadDeConocimiento();
                         this.myAgent.addBehaviour(new CrearSimulacro(unidad));                        
+                    }else if(ce instanceof SimulacroPresentado) {
+                        SimulacroPresentado simulacroPresentado = (SimulacroPresentado) ce;
+                        Simulacro simulacro = simulacroPresentado.getSimulacro();
+                        this.myAgent.addBehaviour(new AnalizarSimulacro(simulacro));                        
                     }
                 } catch (Codec.CodecException | OntologyException ex) {
                     Logger.getLogger(AgenteGestionadorDeSimulacros.class.getName()).log(Level.SEVERE, null, ex);
@@ -87,20 +133,52 @@ public class AgenteGestionadorDeSimulacros extends Agent {
                     }else {
                         obj = crearSimulacro("dificil", this.unidad.getTema());
                     }
+                }else{
+                    obj = crearSimulacro(simulacro.getNivelDificultad(), this.unidad.getTema()); 
                 }
             } else {
-                System.out.println("upsi, toy vacio");
                 obj = crearSimulacro("facil", this.unidad.getTema());
                 //this.myAgent.addBehaviour(new CrearSimulacro(unidad)); 
             }
-            System.out.println(obj);
             
+            if (obj != null) {
+                SimulacroCreado simulacroCreado = new SimulacroCreado();
+                simulacroCreado.setSimulacro((Simulacro) obj);
+                ACLMessage mensaje = new ACLMessage();
+                AID id = new AID();
+                id.setLocalName("AgenteInteraccionConElUsuario");
+                mensaje.addReceiver(id);
+                mensaje.setLanguage(codec.getName());
+                mensaje.setOntology(ontologia.getName());
+                mensaje.setPerformative(ACLMessage.INFORM);
+                try {
+                    getContentManager().fillContent(mensaje, simulacroCreado);
+                } catch (Codec.CodecException | OntologyException ex) {
+                    Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                getAgent().send(mensaje);
+            }   
         }
         
         private Object crearSimulacro(String dificultad, String tema) {
             List preguntas = baseDatos.obtenerPreguntasParaSimulacro(dificultad, tema);
-            
-            return preguntas;
+            Random rd =new Random();
+            Simulacro simulacro = new Simulacro();
+            int contador = 5 ;
+            if (preguntas.size() >= 5) {
+                while(contador > 0){
+                    int indice = rd.nextInt(preguntas.size());
+                    simulacro.addListaDePreguntas((Pregunta) preguntas.get(indice));
+                    preguntas.remove(indice);
+                    contador --;
+                }
+                simulacro.setNivelDificultad(dificultad);
+                simulacro.setTema(tema);
+            }else {
+                System.out.println("No hay preguntas suficientes");
+                return null;
+            }
+            return simulacro;
         }
     }
 }
