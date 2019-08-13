@@ -8,12 +8,14 @@ import jade.content.onto.Ontology;
 import jade.content.onto.OntologyException;
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.util.leap.List;
-//import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import ontologia.ElearnigOntology;
@@ -30,6 +32,24 @@ public class AgenteGestionadorDeUnidadesDeConocimiento extends Agent {
 
     @Override
     protected void setup() {
+        try {
+            DFAgentDescription dfd = new DFAgentDescription();
+            dfd.setName(getAID());
+            ServiceDescription sd = new ServiceDescription();
+            sd.setType("GestionadorUDC");
+            sd.setName("Crear unidades de conocimientos");
+
+            ServiceDescription sd1 = new ServiceDescription();
+            sd1.setType("GestionadorUDC");
+            sd1.setName("Enviar unidades de conocimientos");
+
+            dfd.addServices(sd);
+            dfd.addServices(sd1);
+
+            DFService.register(this, dfd);
+        } catch (FIPAException e) {
+        }
+
         getContentManager().registerLanguage(codec);
         getContentManager().registerOntology(ontologia);
         this.addBehaviour(new crearUnidad());
@@ -46,7 +66,7 @@ public class AgenteGestionadorDeUnidadesDeConocimiento extends Agent {
                     MessageTemplate.MatchSender(id),
                     MessageTemplate.MatchContent("unidades"));
             ACLMessage msg = myAgent.receive(mt);
-            if(msg != null){
+            if (msg != null) {
                 List unidades = baseDatos.obtenerUnidadesDeConocimientos();
                 UnidadesDeConocimientos unidadesDeConocimientos = new UnidadesDeConocimientos();
                 unidadesDeConocimientos.setUnidadesDeConocimientos(unidades);

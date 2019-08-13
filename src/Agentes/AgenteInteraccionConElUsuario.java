@@ -10,9 +10,17 @@ import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.util.leap.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Iterator;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,7 +28,9 @@ import ontologia.*;
 
 public class AgenteInteraccionConElUsuario extends Agent {
 
-    Scanner entrada = new Scanner(System.in);
+    private final Scanner entrada = new Scanner(System.in);
+    BufferedReader buff = new BufferedReader(new InputStreamReader(System.in));
+    private DFAgentDescription[] resultados;
     private final Codec codec = new SLCodec();
     private final Ontology ontologia = ElearnigOntology.getInstance();
     private boolean creacionPreguntaSimulacro = false;
@@ -30,9 +40,52 @@ public class AgenteInteraccionConElUsuario extends Agent {
 
     @Override
     protected void setup() {
+        try {
+            DFAgentDescription dfd = new DFAgentDescription();
+            dfd.setName(getAID());
+            ServiceDescription sd = new ServiceDescription();
+            sd.setType("InteradorConUsuario");
+            sd.setName("Presentar simulacros");
+
+            ServiceDescription sd1 = new ServiceDescription();
+            sd1.setType("InteradorConUsuario");
+            sd1.setName("Presentar evaluaciones");
+
+            dfd.addServices(sd);
+            dfd.addServices(sd1);
+
+            DFService.register(this, dfd);
+        } catch (FIPAException e) {
+        }
+        try {
+            buscarServicio();
+        } catch (FIPAException ex) {
+            Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         getContentManager().registerLanguage(codec);
         getContentManager().registerOntology(ontologia);
         this.addBehaviour(new menu());
+    }
+    
+    public void buscarServicio() throws FIPAException {
+        DFAgentDescription descripcion = new DFAgentDescription();
+        // Todas las descripciones que encajan con la plantilla proporcionada en el DF
+        resultados = DFService.search(this, descripcion);
+        if (resultados.length == 0) {
+            System.out.println("Ningun agente ofrece el servicio deseado");
+        } else {
+            for (int i = 0; i < resultados.length; ++i) {
+                System.out.println("El agente " + resultados[i].getName().getLocalName() + " ofrece los siguientes servicios:");
+                Iterator servicios = resultados[i].getAllServices();
+                int j = 1;
+                while (servicios.hasNext()) {
+                    ServiceDescription servicio = (ServiceDescription) servicios.next();
+                    System.out.println(j + "- " + servicio.getName());
+                    j++;
+                }
+            }
+        }
     }
 
     private class RespuestaCreacionEvaluacion extends CyclicBehaviour {
@@ -56,7 +109,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
 
     private class crearEvaluacion extends OneShotBehaviour {
 
-        private UnidadesDeConocimientos unidades;
+        private final UnidadesDeConocimientos unidades;
 
         private crearEvaluacion(UnidadesDeConocimientos unidades) {
             this.unidades = unidades;
@@ -203,20 +256,20 @@ public class AgenteInteraccionConElUsuario extends Agent {
                 System.out.println("Ingresar los datos para la pregunta");
                 System.out.println("Ingrese enunciado");
                 String next;
-                next = entrada.next();
-                pregunta.setEnunciado(next);
+                String input = buff.readLine();
+                pregunta.setEnunciado(input);
                 System.out.println("Ingrese opcion 1");
-                next = entrada.next();
-                pregunta.setOpcion1(next);
+                input = buff.readLine();
+                pregunta.setOpcion1(input);
                 System.out.println("Ingrese opcion 2");
-                next = entrada.next();
-                pregunta.setOpcion2(next);
+                input = buff.readLine();
+                pregunta.setOpcion2(input);
                 System.out.println("Ingrese opcion 3");
-                next = entrada.next();
-                pregunta.setOpcion3(next);
+                input = buff.readLine();
+                pregunta.setOpcion3(input);
                 System.out.println("Ingrese opcion 4");
-                next = entrada.next();
-                pregunta.setOpcion4(next);
+                input = buff.readLine();
+                pregunta.setOpcion4(input);
                 System.out.println("Ingrese la opcion correcta");
                 next = entrada.next();
                 pregunta.setRespuestaCorrecta(next);
@@ -248,7 +301,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
                 this.myAgent.addBehaviour(new respuestaCreacionPreguntaSimulacro());
                 this.myAgent.addBehaviour(new respuestaCreacionPreguntaEvaluacion());
 
-            } catch (Codec.CodecException | OntologyException ex) {
+            } catch (Codec.CodecException | OntologyException | IOException ex) {
                 Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -277,7 +330,12 @@ public class AgenteInteraccionConElUsuario extends Agent {
         @Override
         public void action() {
             System.out.println("Ingresar nombre del tema");
-            String tema = entrada.next();
+            String tema = "";
+            try {
+                tema = buff.readLine();
+            } catch (IOException ex) {
+                Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+            }
             UnidadDeConocimiento unidadDeConocimiento = new UnidadDeConocimiento();
             unidadDeConocimiento.setTema(tema);
             UnidadDeConocimientoCreada unidadDeConocimientoCreada = new UnidadDeConocimientoCreada();

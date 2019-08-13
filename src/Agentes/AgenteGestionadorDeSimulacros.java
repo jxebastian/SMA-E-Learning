@@ -10,6 +10,10 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import java.util.logging.Level;
@@ -25,6 +29,39 @@ public class AgenteGestionadorDeSimulacros extends Agent {
 
     @Override
     protected void setup() {
+        try {
+            DFAgentDescription dfd = new DFAgentDescription();
+            dfd.setName(getAID());
+            ServiceDescription sd = new ServiceDescription();
+            sd.setType("GestionadorSimulacros");
+            sd.setName("Crear simulacros");
+
+            ServiceDescription sd1 = new ServiceDescription();
+            sd1.setType("GestionadorSimulacros");
+            sd1.setName("Enviar simulacros");
+            
+            ServiceDescription sd2 = new ServiceDescription();
+            sd2.setType("GestionadorSimulacros");
+            sd2.setName("Calificar simulacros");
+
+            ServiceDescription sd3 = new ServiceDescription();
+            sd3.setType("GestionadorSimulacros");
+            sd3.setName("Dar recomendaciones para los simulacros");
+            
+            ServiceDescription sd4 = new ServiceDescription();
+            sd4.setType("GestionadorSimulacros");
+            sd4.setName("Guardar simulacros");
+            
+            dfd.addServices(sd);
+            dfd.addServices(sd1);
+            dfd.addServices(sd2);
+            dfd.addServices(sd3);
+            dfd.addServices(sd4);
+
+            DFService.register(this, dfd);
+        } catch (FIPAException e) {
+        }
+        
         getContentManager().registerLanguage(codec);
         getContentManager().registerOntology(ontologia);
         this.addBehaviour(new crearPregunta());

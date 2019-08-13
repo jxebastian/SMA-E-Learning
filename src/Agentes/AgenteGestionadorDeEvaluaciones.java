@@ -8,9 +8,12 @@ import jade.content.onto.Ontology;
 import jade.content.onto.OntologyException;
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.util.leap.List;
@@ -26,6 +29,28 @@ public class AgenteGestionadorDeEvaluaciones extends Agent {
 
     @Override
     protected void setup() {
+        try {
+            DFAgentDescription dfd = new DFAgentDescription();
+            dfd.setName(getAID());
+            ServiceDescription sd = new ServiceDescription();
+            sd.setType("GestionadorEvaluaciones");
+            sd.setName("Crear evaluaciones");
+
+            ServiceDescription sd1 = new ServiceDescription();
+            sd1.setType("GestionadorEvaluaciones");
+            sd1.setName("Enviar evaluaciones");
+            
+            ServiceDescription sd2 = new ServiceDescription();
+            sd2.setType("GestionadorEvaluaciones");
+            sd2.setName("Calificar evaluaciones");
+            
+            dfd.addServices(sd);
+            dfd.addServices(sd1);
+            dfd.addServices(sd2);
+
+            DFService.register(this, dfd);
+        } catch (FIPAException e) {
+        }
         getContentManager().registerLanguage(codec);
         getContentManager().registerOntology(ontologia);
         this.addBehaviour(new ProtocoloICU());
