@@ -13,9 +13,7 @@ import java.sql.SQLException;
 //import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import ontologia.Evaluacion;
-import ontologia.Pregunta;
-import ontologia.UnidadDeConocimiento;
+import ontologia.*;
 
 /**
  *
@@ -181,7 +179,86 @@ public class operaciones {
             }
         } catch (SQLException ex) {
             Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
+        }finally {
+            try {
+                conexion.consulta.close();
+                conexion.conexion.close();
+            } catch (SQLException e) {
+            }
         }
         return unidades;
+    }
+
+    public Object obtenerSimulacro(String unidad) {
+        conexion.conectar();
+        Simulacro simulacro = null;
+        String sql = "Select * from simulacro WHERE tema='" + unidad +"'";
+        try {
+            ResultSet resultado = conexion.consulta.executeQuery(sql);
+            while(resultado.next()){
+                simulacro = new Simulacro();
+                simulacro.setTema(resultado.getString("tema"));
+                simulacro.setAnalisis(resultado.getString("analisis"));
+                simulacro.setCalificacion(resultado.getInt("calificacion"));
+                simulacro.setNivelDificultad(resultado.getString("nivelDificultad"));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
+        }finally {
+            try {
+                conexion.consulta.close();
+                conexion.conexion.close();
+            } catch (SQLException e) {
+            }
+        }
+        return simulacro;
+    }
+    
+    public List obtenerPreguntasParaSimulacro(String dificultad, String tema) {
+        List preguntas = new ArrayList();
+        conexion.conectar();
+        String sql = "Select * from preguntaSimulacro Where nivelDificultad='" + dificultad + "' and unidadConocimiento='" + tema + "'";
+        try {
+            ResultSet resultado = conexion.consulta.executeQuery(sql);
+            while(resultado.next()){
+                Pregunta pregunta = new Pregunta();
+                pregunta.setTema(resultado.getString("unidadConocimiento"));
+                pregunta.setEnunciado(resultado.getString("enunciado"));
+                pregunta.setNivelDificultad(resultado.getString("nivelDificultad"));
+                pregunta.setOpcion1(resultado.getString("opcion1"));
+                pregunta.setOpcion2(resultado.getString("opcion2"));
+                pregunta.setOpcion3(resultado.getString("opcion3"));
+                pregunta.setOpcion4(resultado.getString("opcion4"));
+                pregunta.setRespuestaCorrecta(resultado.getString("respuestaCorrecta"));
+                preguntas.add(pregunta);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
+        }finally {
+            try {
+                conexion.consulta.close();
+                conexion.conexion.close();
+            } catch (SQLException e) {
+            }
+        }
+        return preguntas;
+    }
+    public boolean guardarSimulacro(Simulacro simulacro) {
+        conexion.conectar();
+        String sql = "insert into simulacro values(NULL,'" + simulacro.getTema() 
+                + "'," + simulacro.getCalificacion() + ",'" + simulacro.getNivelDificultad() +"','" + simulacro.getAnalisis() + "')";
+        try {
+            conexion.consulta.execute(sql);
+        } catch (SQLException ex) {
+            Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }finally {
+            try {
+                conexion.consulta.close();
+                conexion.conexion.close();
+            } catch (SQLException e) {
+            }
+        }
+        return true;
     }
 }
