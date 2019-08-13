@@ -105,7 +105,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
 
         @Override
         public void action() {
-            System.out.println("Enunciado");
+            System.out.println("Debe seleccionar la respuesta correcta (1,2,3 o 4)");
             List preguntas =  simulacro.getListaDePreguntas();
             int nota = 0;
             for (int i = 0; i < preguntas.size(); i++) {
@@ -164,6 +164,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
                         Simulacro simulacro = simulacroCalificado.getSimulacro();
                         System.out.println("Tu nota fue de: " + simulacro.getCalificacion());
                         System.out.println("Recomendación: " + simulacro.getAnalisis());
+                        this.myAgent.addBehaviour(new menu());
                     }
                 } catch (Codec.CodecException | OntologyException ex) {
                     Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
