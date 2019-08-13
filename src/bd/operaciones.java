@@ -94,14 +94,16 @@ public class operaciones {
     }
 
     public boolean guardarEvaluacion(Evaluacion evaluacion) {
-        String sql = "insert into preguntaSimulacro (id, tema) "
-                + "values(NULL,'" + evaluacion.getTema() + "')";
+        conexion.conectar();
+        String sql = "insert into evaluacion "
+                + "values(NULL, NULL, '" + evaluacion.getTema() + "')";
         try {
             conexion.consulta.execute(sql);
             for (int i = 0; i < evaluacion.getListaDePreguntas().size(); i++) {
                 Pregunta pregunta = (Pregunta) evaluacion.getListaDePreguntas().get(i);
                 sql = "insert into preguntaXevaluacion values('" + evaluacion.getTema()
-                        +"',"+ pregunta.getId();
+                        +"',"+ pregunta.getId() + ")";
+                conexion.consulta.execute(sql);
             }
         } catch (SQLException ex) {
             Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
@@ -136,9 +138,10 @@ public class operaciones {
     }
 
     public List obtenerPreguntasEvaluacion(String tema) {
+        conexion.conectar();
         List preguntas = new ArrayList();
         conexion.conectar();
-        String sql = "select * from preguntaEvaluacion WHERE = '" + tema + "'";
+        String sql = "select * from preguntaEvaluacion WHERE tema = '" + tema + "'";
         try {
             ResultSet resultado = conexion.consulta.executeQuery(sql);
             while (resultado.next() && preguntas.size() <= 5) {

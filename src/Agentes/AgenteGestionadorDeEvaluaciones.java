@@ -42,12 +42,19 @@ public class AgenteGestionadorDeEvaluaciones extends Agent {
             Evaluacion evaluacion = new Evaluacion();
             evaluacion.setTema(this.unidadDeConocimiento.getTema());
             List preguntas = baseDatos.obtenerPreguntasEvaluacion(this.unidadDeConocimiento.getTema());
+            ACLMessage mensaje = new ACLMessage();
+            AID id = new AID();
+            id.setLocalName("AgenteInteraccionConElUsuario");
+            mensaje.addReceiver(id);
             if (preguntas.size() == 5){
                 evaluacion.setListaDePreguntas(preguntas);
                 baseDatos.guardarEvaluacion(evaluacion);
+                mensaje.setContent("evaluacion creada");
             }else {
+                mensaje.setContent("no se puede crear");
                 System.out.println("no se puede");
             }
+            this.myAgent.send(mensaje);
         }
     }
 

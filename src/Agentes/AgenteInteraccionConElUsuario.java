@@ -35,6 +35,25 @@ public class AgenteInteraccionConElUsuario extends Agent {
         this.addBehaviour(new menu());
     }
 
+    private class RespuestaCreacionEvaluacion extends CyclicBehaviour {
+
+        @Override
+        public void action() {
+            AID id = new AID();
+            id.setLocalName("AgenteGestionadorDeEvaluaciones");
+            MessageTemplate mt = MessageTemplate.and(
+                    MessageTemplate.MatchSender(id),
+                    MessageTemplate.MatchContent("evaluacion creada"));
+            ACLMessage msg = myAgent.receive(mt);
+            if (msg != null) {
+                System.out.println(msg.getContent());
+                this.myAgent.addBehaviour(new menu());
+            } else {
+                block();
+            }
+        }
+    }
+
     private class crearEvaluacion extends OneShotBehaviour {
 
         private UnidadesDeConocimientos unidades;
@@ -67,7 +86,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
             try {
                 getContentManager().fillContent(mensaje, unidadDeConocimientoCreada);
                 this.myAgent.send(mensaje);
-                //
+                this.myAgent.addBehaviour(new RespuestaCreacionEvaluacion());
             } catch (Codec.CodecException | OntologyException ex) {
                 Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
             }
