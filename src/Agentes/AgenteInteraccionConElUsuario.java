@@ -33,6 +33,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
     private DFAgentDescription[] resultados;
     private final Codec codec = new SLCodec();
     private final Ontology ontologia = ElearnigOntology.getInstance();
+    private boolean hacerSimulacro = false;
     private boolean creacionPreguntaSimulacro = false;
     private boolean creacionPreguntaEvaluacion = false;
     private boolean creacionPregunta = false;
@@ -66,6 +67,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
         getContentManager().registerLanguage(codec);
         getContentManager().registerOntology(ontologia);
         this.addBehaviour(new menu());
+        this.addBehaviour(new ProtocoloGDS());
     }
     
     public void buscarServicio() throws FIPAException {
@@ -146,6 +148,86 @@ public class AgenteInteraccionConElUsuario extends Agent {
         }
     }
 
+    private class PresentarSimulacro extends OneShotBehaviour {
+        
+        private final Simulacro simulacro;
+
+        public PresentarSimulacro(Simulacro simulacro) {
+            this.simulacro = simulacro;
+        }
+
+        @Override
+        public void action() {
+            System.out.println("Enunciado");
+            List preguntas =  simulacro.getListaDePreguntas();
+            int nota = 0;
+            for (int i = 0; i < preguntas.size(); i++) {
+                Pregunta pregunta = (Pregunta) preguntas.get(i);
+                System.out.println("pregunta #"+(i+1));
+                System.out.println(pregunta.getEnunciado());
+                System.out.println("1. "+pregunta.getOpcion1());
+                System.out.println("2. "+pregunta.getOpcion2());
+                System.out.println("3. "+pregunta.getOpcion3());
+                System.out.println("4. "+pregunta.getOpcion4());
+                System.out.println("Ingrese su respuesta:");
+                int opcion = entrada.nextInt();
+                String respuesta = "opcion" + opcion;
+                if (pregunta.getRespuestaCorrecta().equals(respuesta)) {
+                    nota++;                    
+                }
+            }
+            simulacro.setCalificacion(nota);
+            SimulacroPresentado simulacroPresentado = new SimulacroPresentado();
+            simulacroPresentado.setSimulacro(simulacro);
+            ACLMessage mensaje = new ACLMessage();
+            AID id = new AID();
+            id.setLocalName("AgenteGestionadorDeSimulacros");
+            mensaje.addReceiver(id);
+            mensaje.setLanguage(codec.getName());
+            mensaje.setOntology(ontologia.getName());
+            mensaje.setPerformative(ACLMessage.INFORM);
+            try {
+                getContentManager().fillContent(mensaje, simulacroPresentado);
+            } catch (Codec.CodecException | OntologyException ex) {
+                Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            getAgent().send(mensaje);
+        }
+    }
+
+    private class ProtocoloGDS extends CyclicBehaviour {
+
+        @Override
+        public void action() {
+            AID id = new AID();
+            id.setLocalName("AgenteGestionadorDeSimulacros");
+            MessageTemplate mt = MessageTemplate.and(
+                    MessageTemplate.MatchSender(id),
+                    MessageTemplate.MatchOntology(ontologia.getName()));
+            ACLMessage msg = myAgent.receive(mt);
+            if (msg != null) {
+                try {
+                    ContentElement ce = getContentManager().extractContent(msg);
+                    if (ce instanceof SimulacroCreado) {
+                        SimulacroCreado simulacroCreado = (SimulacroCreado) ce;
+                        Simulacro simulacro = simulacroCreado.getSimulacro();
+                        this.myAgent.addBehaviour(new PresentarSimulacro(simulacro));
+                    }else if (ce instanceof SimulacroCalificado) {
+                        SimulacroCalificado simulacroCalificado = (SimulacroCalificado) ce;
+                        Simulacro simulacro = simulacroCalificado.getSimulacro();
+                        System.out.println("Tu nota fue de: " + simulacro.getCalificacion());
+                        System.out.println("Recomendación: " + simulacro.getAnalisis());
+                    }
+                } catch (Codec.CodecException | OntologyException ex) {
+                    Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                block();
+            }
+           
+        }
+    }
+
     private class protocoloUDC extends CyclicBehaviour {
 
         @Override
@@ -166,6 +248,8 @@ public class AgenteInteraccionConElUsuario extends Agent {
                             this.myAgent.addBehaviour(new crearPregunta(unidades));
                         } else if (creacionEvaluacion) {
                             this.myAgent.addBehaviour(new crearEvaluacion(unidades));
+                        } else if (hacerSimulacro) {
+                            this.myAgent.addBehaviour(new ObtenerSimulacro(unidades));
                         }
                     }
                 } catch (Codec.CodecException | OntologyException ex) {
@@ -357,6 +441,44 @@ public class AgenteInteraccionConElUsuario extends Agent {
         }
     }
 
+    private class ObtenerSimulacro extends OneShotBehaviour {
+
+        private UnidadesDeConocimientos unidades;
+
+        public ObtenerSimulacro (UnidadesDeConocimientos unidades) {
+            this.unidades = unidades;
+        }
+
+        @Override
+        public void action() {
+            try {              
+                List unidadesDeConocimientos = this.unidades.getUnidadesDeConocimientos();
+                System.out.println("Escoger tema de simulacro");  
+                for (int i = 0; i < unidadesDeConocimientos.size(); i++) {
+                    UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(i);
+                    System.out.println(i + 1 + ". " + unidad.getTema());
+                }
+                int opcion = entrada.nextInt();
+                UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(opcion - 1);
+                UnidadDeConocimientoCreada unidadCreada = new UnidadDeConocimientoCreada();
+                unidadCreada.setUnidadDeConocimiento(unidad);
+
+                // enviar al agente simulacro
+                ACLMessage mensaje = new ACLMessage();
+                AID id = new AID();
+                id.setLocalName("AgenteGestionadorDeSimulacros");
+                mensaje.addReceiver(id);
+                mensaje.setLanguage(codec.getName());
+                mensaje.setOntology(ontologia.getName());
+                mensaje.setPerformative(ACLMessage.INFORM);
+                getContentManager().fillContent(mensaje, unidadCreada);
+                this.myAgent.send(mensaje);
+            } catch (Codec.CodecException | OntologyException ex) {
+                Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
     private class menu extends OneShotBehaviour {
 
         @Override
@@ -393,6 +515,11 @@ public class AgenteInteraccionConElUsuario extends Agent {
                     case 4:
                         creacionEvaluacion = true;
                         this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
+                        break;
+                    case 5:
+                        hacerSimulacro = true;
+                        this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
+                        // this.myAgent.addBehaviour(new ObtenerSimulacro());
                         break;
                     default:
                         System.out.println("Ingrese un numero valido");
