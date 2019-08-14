@@ -30,6 +30,75 @@ public class AgenteGestionadorDeEvaluaciones extends Agent {
         getContentManager().registerOntology(ontologia);
         this.addBehaviour(new ProtocoloICU());
     }
+    private class CalificarEvaluacion extends OneShotBehaviour {
+        private final Evaluacion evaluacion;
+
+        public CalificarEvaluacion(Evaluacion evaluacion) {
+            this.evaluacion = evaluacion;
+        }
+
+        @Override
+        public void action() {
+           String dificultad = this.evaluacion.getNivelDificultad();
+           int nota = this.evaluacion.getCalificacion();
+           String analisis;
+           
+            if (nota < 3) {
+                analisis = "Debes esforzarte más, intenta repasar " + this.evaluacion.getTema();
+            }else if (nota < 5) {
+                analisis = "Vas bien, solo falta un poco";
+            }else{
+                analisis = "Excelente!!! sigue asi!!";
+            }
+            this.evaluacion.setAnalisis(analisis);
+            baseDatos.guardarEvaluacion(evaluacion);
+            EvaluacionCalificada evaluacionCalificada = new EvaluacionCalificada();
+            evaluacionCalificada.setEvaluacion(evaluacion);
+            ACLMessage mensaje = new ACLMessage();
+            AID id = new AID();
+            id.setLocalName("AgenteInteraccionConElUsuario");
+            mensaje.addReceiver(id);
+            mensaje.setLanguage(codec.getName());
+            mensaje.setOntology(ontologia.getName());
+            mensaje.setPerformative(ACLMessage.INFORM);
+            try {
+                getContentManager().fillContent(mensaje,evaluacionCalificada);
+            } catch (Codec.CodecException | OntologyException ex) {
+                Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            getAgent().send(mensaje);  
+        }
+    }
+
+    private class PresentarEvaluacion extends OneShotBehaviour {
+        private final String tema;
+        public PresentarEvaluacion(String tema) {
+            this.tema=tema;
+        }
+
+        @Override
+        public void action() {
+            Evaluacion evaluacion = (Evaluacion) baseDatos.obtenerEvaluacion(this.tema);
+            
+            if (evaluacion != null) {
+                EvaluacionCreada evaluacionCreado = new EvaluacionCreada();
+                evaluacionCreado.setEvaluacion((Evaluacion) evaluacion);
+                ACLMessage mensaje = new ACLMessage();
+                AID id = new AID();
+                id.setLocalName("AgenteInteraccionConElUsuario");
+                mensaje.addReceiver(id);
+                mensaje.setLanguage(codec.getName());
+                mensaje.setOntology(ontologia.getName());
+                mensaje.setPerformative(ACLMessage.INFORM);
+                try {
+                    getContentManager().fillContent(mensaje, evaluacionCreado);
+                } catch (Codec.CodecException | OntologyException ex) {
+                    Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                getAgent().send(mensaje);
+            }   
+        }
+    }
 
     private class CrearEvaluacion extends OneShotBehaviour {
         private final UnidadDeConocimiento unidadDeConocimiento;
@@ -99,6 +168,14 @@ public class AgenteGestionadorDeEvaluaciones extends Agent {
                         UnidadDeConocimientoCreada unidadDeConocimientoCreada = (UnidadDeConocimientoCreada) ce;
                         UnidadDeConocimiento unidadDeConocimiento = unidadDeConocimientoCreada.getUnidadDeConocimiento();
                         this.myAgent.addBehaviour(new CrearEvaluacion(unidadDeConocimiento));
+                    }else if (ce instanceof UnidadesDeConocimientosCreada) {
+                        UnidadesDeConocimientosCreada unidadDeConocimientoCreada = (UnidadesDeConocimientosCreada) ce;
+                        UnidadesDeConocimientos unidadesDeConocimiento = (UnidadesDeConocimientos) unidadDeConocimientoCreada.getUnidades();
+                        UnidadDeConocimiento unidadDeConocimiento = (UnidadDeConocimiento) unidadesDeConocimiento.getUnidadesDeConocimientos().get(0);                        
+                        this.myAgent.addBehaviour(new PresentarEvaluacion(unidadDeConocimiento.getTema()));
+                    } else if (ce instanceof EvaluacionPresantada) {
+                        EvaluacionPresantada evaluacionPresentada = (EvaluacionPresantada) ce;
+                        this.myAgent.addBehaviour(new CalificarEvaluacion(evaluacionPresentada.getEvaluacion()));
                     }
                 } catch (Codec.CodecException | OntologyException ex) {
                     Logger.getLogger(AgenteGestionadorDeSimulacros.class.getName()).log(Level.SEVERE, null, ex);

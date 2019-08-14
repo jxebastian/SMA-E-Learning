@@ -24,6 +24,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
     private final Codec codec = new SLCodec();
     private final Ontology ontologia = ElearnigOntology.getInstance();
     private boolean hacerSimulacro = false;
+    private boolean hacerEvaluacion = false;
     private boolean creacionPreguntaSimulacro = false;
     private boolean creacionPreguntaEvaluacion = false;
     private boolean creacionPregunta = false;
@@ -35,6 +36,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
         getContentManager().registerOntology(ontologia);
         this.addBehaviour(new menu());
         this.addBehaviour(new ProtocoloGDS());
+        this.addBehaviour(new ProtocoloGDE());
     }
 
     private class RespuestaCreacionEvaluacion extends CyclicBehaviour {
@@ -105,6 +107,8 @@ public class AgenteInteraccionConElUsuario extends Agent {
 
         @Override
         public void action() {
+            System.out.println("Simulacro iniciado");
+            System.out.println("Dificultad: " + simulacro.getNivelDificultad());
             System.out.println("Debe seleccionar la respuesta correcta (1,2,3 o 4)");
             List preguntas =  simulacro.getListaDePreguntas();
             int nota = 0;
@@ -135,6 +139,53 @@ public class AgenteInteraccionConElUsuario extends Agent {
             mensaje.setPerformative(ACLMessage.INFORM);
             try {
                 getContentManager().fillContent(mensaje, simulacroPresentado);
+            } catch (Codec.CodecException | OntologyException ex) {
+                Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            getAgent().send(mensaje);
+        }
+    }
+     private class PresentarEvaluacion extends OneShotBehaviour {
+        
+        private final Evaluacion evaluacion;
+
+        public PresentarEvaluacion(Evaluacion evaluacion) {
+            this.evaluacion = evaluacion;
+        }
+
+        @Override
+        public void action() {
+            System.out.println("Evaluacion iniciado");
+            System.out.println("Debe seleccionar la respuesta correcta (1,2,3 o 4)");
+            List preguntas =  evaluacion.getListaDePreguntas();
+            int nota = 0;
+            for (int i = 0; i < preguntas.size(); i++) {
+                Pregunta pregunta = (Pregunta) preguntas.get(i);
+                System.out.println("pregunta #"+(i+1));
+                System.out.println(pregunta.getEnunciado());
+                System.out.println("1. "+pregunta.getOpcion1());
+                System.out.println("2. "+pregunta.getOpcion2());
+                System.out.println("3. "+pregunta.getOpcion3());
+                System.out.println("4. "+pregunta.getOpcion4());
+                System.out.println("Ingrese su respuesta:");
+                int opcion = entrada.nextInt();
+                String respuesta = "opcion" + opcion;
+                if (pregunta.getRespuestaCorrecta().equals(respuesta)) {
+                    nota++;                    
+                }
+            }
+            evaluacion.setCalificacion(nota);
+            EvaluacionPresantada evaluacionPresentada = new EvaluacionPresantada();
+            evaluacionPresentada.setEvaluacion(evaluacion);
+            ACLMessage mensaje = new ACLMessage();
+            AID id = new AID();
+            id.setLocalName("AgenteGestionadorDeEvaluaciones");
+            mensaje.addReceiver(id);
+            mensaje.setLanguage(codec.getName());
+            mensaje.setOntology(ontologia.getName());
+            mensaje.setPerformative(ACLMessage.INFORM);
+            try {
+                getContentManager().fillContent(mensaje, evaluacionPresentada);
             } catch (Codec.CodecException | OntologyException ex) {
                 Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -198,6 +249,8 @@ public class AgenteInteraccionConElUsuario extends Agent {
                             this.myAgent.addBehaviour(new crearEvaluacion(unidades));
                         } else if (hacerSimulacro) {
                             this.myAgent.addBehaviour(new ObtenerSimulacro(unidades));
+                        } else if (hacerEvaluacion) {
+                            this.myAgent.addBehaviour(new ObtenerEvaluacion(unidades));
                         }
                     }
                 } catch (Codec.CodecException | OntologyException ex) {
@@ -208,6 +261,40 @@ public class AgenteInteraccionConElUsuario extends Agent {
             }
         }
 
+    }
+    
+    private class ProtocoloGDE extends CyclicBehaviour {
+
+        @Override
+        public void action() {
+            AID id = new AID();
+            id.setLocalName("AgenteGestionadorDeEvaluaciones");
+            MessageTemplate mt = MessageTemplate.and(
+                    MessageTemplate.MatchSender(id),
+                    MessageTemplate.MatchOntology(ontologia.getName()));
+            ACLMessage msg = myAgent.receive(mt);
+            if (msg != null) {
+                try {
+                    ContentElement ce = getContentManager().extractContent(msg);
+                    if (ce instanceof EvaluacionCreada) {
+                        EvaluacionCreada evaluacionCreada = (EvaluacionCreada) ce;
+                        Evaluacion evaluacion = evaluacionCreada.getEvaluacion();
+                        this.myAgent.addBehaviour(new PresentarEvaluacion(evaluacion));
+                    }else if (ce instanceof EvaluacionCalificada) {
+                        EvaluacionCalificada evaluacionCalificada = (EvaluacionCalificada) ce;
+                        Evaluacion evaluacion = evaluacionCalificada.getEvaluacion();
+                        System.out.println("Tu nota fue de: " + evaluacion.getCalificacion());
+                        System.out.println("Recomendación: " + evaluacion.getAnalisis());
+                        this.myAgent.addBehaviour(new menu());
+                    }
+                } catch (Codec.CodecException | OntologyException ex) {
+                    Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                block();
+            }
+           
+        }
     }
 
     private class respuestaCreacionPreguntaEvaluacion extends CyclicBehaviour {
@@ -386,7 +473,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
 
     private class ObtenerSimulacro extends OneShotBehaviour {
 
-        private UnidadesDeConocimientos unidades;
+        private final UnidadesDeConocimientos unidades;
 
         public ObtenerSimulacro (UnidadesDeConocimientos unidades) {
             this.unidades = unidades;
@@ -416,6 +503,47 @@ public class AgenteInteraccionConElUsuario extends Agent {
                 mensaje.setPerformative(ACLMessage.INFORM);
                 getContentManager().fillContent(mensaje, unidadCreada);
                 this.myAgent.send(mensaje);
+            } catch (Codec.CodecException | OntologyException ex) {
+                Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    private class ObtenerEvaluacion extends OneShotBehaviour {
+
+        private final UnidadesDeConocimientos unidades;
+
+        public ObtenerEvaluacion (UnidadesDeConocimientos unidades) {
+            this.unidades = unidades;
+        }
+
+        @Override
+        public void action() {
+            try {              
+                List unidadesDeConocimientos = this.unidades.getUnidadesDeConocimientos();
+                System.out.println("Escoger tema de evaluacion");  
+                for (int i = 0; i < unidadesDeConocimientos.size(); i++) {
+                    UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(i);
+                    System.out.println(i + 1 + ". " + unidad.getTema());
+                }
+                int opcion = entrada.nextInt();
+                UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(opcion - 1);
+                UnidadesDeConocimientosCreada unidadCreada = new UnidadesDeConocimientosCreada();
+                UnidadesDeConocimientos unidadDC = new UnidadesDeConocimientos();
+                unidadDC.addUnidadesDeConocimientos(unidad);
+                unidadCreada.setUnidades(unidadDC);
+
+                // enviar al agente evaluacion
+                ACLMessage mensaje = new ACLMessage();
+                AID id = new AID();
+                id.setLocalName("AgenteGestionadorDeEvaluaciones");
+                mensaje.addReceiver(id);
+                mensaje.setLanguage(codec.getName());
+                mensaje.setOntology(ontologia.getName());
+                mensaje.setPerformative(ACLMessage.INFORM);
+                getContentManager().fillContent(mensaje, unidadCreada);
+                this.myAgent.send(mensaje);
+                System.out.println("ENVIADO");
             } catch (Codec.CodecException | OntologyException ex) {
                 Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -461,6 +589,11 @@ public class AgenteInteraccionConElUsuario extends Agent {
                         break;
                     case 5:
                         hacerSimulacro = true;
+                        this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
+                        // this.myAgent.addBehaviour(new ObtenerSimulacro());
+                        break;
+                    case 6:
+                        hacerEvaluacion = true;
                         this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
                         // this.myAgent.addBehaviour(new ObtenerSimulacro());
                         break;
