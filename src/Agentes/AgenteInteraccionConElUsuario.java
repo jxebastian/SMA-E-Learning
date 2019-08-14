@@ -63,13 +63,14 @@ public class AgenteInteraccionConElUsuario extends Agent {
         } catch (FIPAException ex) {
             Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         getContentManager().registerLanguage(codec);
         getContentManager().registerOntology(ontologia);
         this.addBehaviour(new menu());
         this.addBehaviour(new ProtocoloGDS());
+        this.addBehaviour(new protocoloUDC());
     }
-    
+
     public void buscarServicio() throws FIPAException {
         DFAgentDescription descripcion = new DFAgentDescription();
         // Todas las descripciones que encajan con la plantilla proporcionada en el DF
@@ -149,7 +150,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
     }
 
     private class PresentarSimulacro extends OneShotBehaviour {
-        
+
         private final Simulacro simulacro;
 
         public PresentarSimulacro(Simulacro simulacro) {
@@ -159,21 +160,21 @@ public class AgenteInteraccionConElUsuario extends Agent {
         @Override
         public void action() {
             System.out.println("Enunciado");
-            List preguntas =  simulacro.getListaDePreguntas();
+            List preguntas = simulacro.getListaDePreguntas();
             int nota = 0;
             for (int i = 0; i < preguntas.size(); i++) {
                 Pregunta pregunta = (Pregunta) preguntas.get(i);
-                System.out.println("pregunta #"+(i+1));
+                System.out.println("pregunta #" + (i + 1));
                 System.out.println(pregunta.getEnunciado());
-                System.out.println("1. "+pregunta.getOpcion1());
-                System.out.println("2. "+pregunta.getOpcion2());
-                System.out.println("3. "+pregunta.getOpcion3());
-                System.out.println("4. "+pregunta.getOpcion4());
+                System.out.println("1. " + pregunta.getOpcion1());
+                System.out.println("2. " + pregunta.getOpcion2());
+                System.out.println("3. " + pregunta.getOpcion3());
+                System.out.println("4. " + pregunta.getOpcion4());
                 System.out.println("Ingrese su respuesta:");
                 int opcion = entrada.nextInt();
                 String respuesta = "opcion" + opcion;
                 if (pregunta.getRespuestaCorrecta().equals(respuesta)) {
-                    nota++;                    
+                    nota++;
                 }
             }
             simulacro.setCalificacion(nota);
@@ -212,7 +213,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
                         SimulacroCreado simulacroCreado = (SimulacroCreado) ce;
                         Simulacro simulacro = simulacroCreado.getSimulacro();
                         this.myAgent.addBehaviour(new PresentarSimulacro(simulacro));
-                    }else if (ce instanceof SimulacroCalificado) {
+                    } else if (ce instanceof SimulacroCalificado) {
                         SimulacroCalificado simulacroCalificado = (SimulacroCalificado) ce;
                         Simulacro simulacro = simulacroCalificado.getSimulacro();
                         System.out.println("Tu nota fue de: " + simulacro.getCalificacion());
@@ -224,7 +225,7 @@ public class AgenteInteraccionConElUsuario extends Agent {
             } else {
                 block();
             }
-           
+
         }
     }
 
@@ -310,7 +311,6 @@ public class AgenteInteraccionConElUsuario extends Agent {
             mensaje.setPerformative(ACLMessage.INFORM);
             mensaje.setContent("unidades");
             this.myAgent.send(mensaje);
-            this.myAgent.addBehaviour(new protocoloUDC());
         }
     }
 
@@ -443,17 +443,17 @@ public class AgenteInteraccionConElUsuario extends Agent {
 
     private class ObtenerSimulacro extends OneShotBehaviour {
 
-        private UnidadesDeConocimientos unidades;
+        private final UnidadesDeConocimientos unidades;
 
-        public ObtenerSimulacro (UnidadesDeConocimientos unidades) {
+        public ObtenerSimulacro(UnidadesDeConocimientos unidades) {
             this.unidades = unidades;
         }
 
         @Override
         public void action() {
-            try {              
+            try {
                 List unidadesDeConocimientos = this.unidades.getUnidadesDeConocimientos();
-                System.out.println("Escoger tema de simulacro");  
+                System.out.println("Escoger tema de simulacro");
                 for (int i = 0; i < unidadesDeConocimientos.size(); i++) {
                     UnidadDeConocimiento unidad = (UnidadDeConocimiento) unidadesDeConocimientos.get(i);
                     System.out.println(i + 1 + ". " + unidad.getTema());
@@ -519,7 +519,6 @@ public class AgenteInteraccionConElUsuario extends Agent {
                     case 5:
                         hacerSimulacro = true;
                         this.myAgent.addBehaviour(new solicitarNombresUnidadConocimiento());
-                        // this.myAgent.addBehaviour(new ObtenerSimulacro());
                         break;
                     default:
                         System.out.println("Ingrese un numero valido");
