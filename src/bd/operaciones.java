@@ -94,15 +94,18 @@ public class operaciones {
     public boolean guardarEvaluacion(Evaluacion evaluacion) {
         conexion.conectar();
         String sql = "insert into evaluacion "
-                + "values(NULL, NULL, '" + evaluacion.getTema() + "')";
+                + "values(NULL," + evaluacion.getCalificacion()+ ", '" + evaluacion.getTema() + "')";
         try {
             conexion.consulta.execute(sql);
-            for (int i = 0; i < evaluacion.getListaDePreguntas().size(); i++) {
-                Pregunta pregunta = (Pregunta) evaluacion.getListaDePreguntas().get(i);
-                sql = "insert into preguntaXevaluacion values('" + evaluacion.getTema()
-                        +"',"+ pregunta.getId() + ")";
-                conexion.consulta.execute(sql);
+            if (evaluacion.getAnalisis() == null ) {
+                for (int i = 0; i < evaluacion.getListaDePreguntas().size(); i++) {
+                    Pregunta pregunta = (Pregunta) evaluacion.getListaDePreguntas().get(i);
+                    sql = "insert into preguntaXevaluacion values('" + evaluacion.getTema()
+                            +"',"+ pregunta.getId() + ")";
+                    conexion.consulta.execute(sql);
+                }
             }
+            
         } catch (SQLException ex) {
             Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
             return false;
@@ -212,6 +215,35 @@ public class operaciones {
             }
         }
         return simulacro;
+    }
+    
+    public Object obtenerEvaluacion(String tema) {
+        conexion.conectar();
+        Evaluacion evaluacion = null;
+        String sql = "Select * from evaluacion WHERE tema='" + tema +"'";
+        try {
+            ResultSet resultado = conexion.consulta.executeQuery(sql);
+            while(resultado.next()){
+                evaluacion = new Evaluacion();
+                evaluacion.setTema(resultado.getString("tema"));
+                //evaluacion.setAnalisis(resultado.getString("analisis"));
+                evaluacion.setCalificacion(resultado.getInt("calificacion"));
+                //evaluacion.setNivelDificultad(resultado.getString("nivelDificultad"));
+            }  
+        } catch (SQLException ex) {
+            Logger.getLogger(operaciones.class.getName()).log(Level.SEVERE, null, ex);
+        }finally {
+            try {
+                conexion.consulta.close();
+                conexion.conexion.close();
+            } catch (SQLException e) {
+            }
+        }
+        if (evaluacion != null) {
+            evaluacion.setListaDePreguntas(obtenerPreguntasEvaluacion(tema));
+        }
+        
+        return evaluacion;
     }
     
     public List obtenerPreguntasParaSimulacro(String dificultad, String tema) {

@@ -106,8 +106,7 @@ public class AgenteGestionadorDeSimulacros extends Agent {
             } catch (Codec.CodecException | OntologyException ex) {
                 Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
             }
-            getAgent().send(mensaje);
-            
+            getAgent().send(mensaje);  
         }
     }
 
