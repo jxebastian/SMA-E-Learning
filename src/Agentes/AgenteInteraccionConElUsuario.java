@@ -166,7 +166,6 @@ public class AgenteInteraccionConElUsuario extends Agent {
             System.out.println("Simulacro iniciado");
             System.out.println("Dificultad: " + simulacro.getNivelDificultad());
             System.out.println("Debe seleccionar la respuesta correcta (1,2,3 o 4)");
-            List preguntas =  simulacro.getListaDePreguntas();
             int nota = 0;
             for (int i = 0; i < preguntas.size(); i++) {
                 Pregunta pregunta = (Pregunta) preguntas.get(i);
@@ -603,7 +602,6 @@ public class AgenteInteraccionConElUsuario extends Agent {
                 mensaje.setPerformative(ACLMessage.INFORM);
                 getContentManager().fillContent(mensaje, unidadCreada);
                 this.myAgent.send(mensaje);
-                System.out.println("ENVIADO");
             } catch (Codec.CodecException | OntologyException ex) {
                 Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
             }

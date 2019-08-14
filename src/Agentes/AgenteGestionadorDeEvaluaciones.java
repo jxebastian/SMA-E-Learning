@@ -121,6 +121,9 @@ public class AgenteGestionadorDeEvaluaciones extends Agent {
                     Logger.getLogger(AgenteInteraccionConElUsuario.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 getAgent().send(mensaje);
+            }else{
+                System.out.println("No se ha creado la evaluacion");
+                
             }   
         }
     }
